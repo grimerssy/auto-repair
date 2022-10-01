@@ -1,20 +1,31 @@
+pub mod map;
+
+use core::fmt;
+use std::fmt::Display;
+
 use actix_web::{
     error,
     http::{header::ContentType, StatusCode},
     HttpResponse,
 };
-use derive_more::Display;
 use serde::Serialize;
 
 #[allow(clippy::enum_variant_names)]
-#[derive(Debug, Display)]
+#[derive(Debug)]
 pub enum ServerError {
-    #[display(fmt = "Validation failed: {}", reason)]
-    ValidationError { reason: String },
-    #[display(fmt = "Requested {} was not found", what)]
-    NotFoundError { what: String },
-    #[display(fmt = "An unexpected error occurred")]
+    ValidationError(String),
+    NotFoundError(String),
     InternalServerError(String),
+}
+
+impl Display for ServerError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ServerError::ValidationError(reason) => write!(f, "Validation failed: {}", reason),
+            ServerError::NotFoundError(what) => write!(f, "Requested {} was not found", what),
+            ServerError::InternalServerError(_) => write!(f, "An unexpected error occurred"),
+        }
+    }
 }
 
 #[derive(Serialize)]

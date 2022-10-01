@@ -238,7 +238,6 @@ name = "auto-repair"
 version = "0.1.0"
 dependencies = [
  "actix-web",
- "derive_more",
  "diesel",
  "diesel-async",
  "dotenv",
