@@ -4,6 +4,18 @@ use diesel::result::Error;
 
 use crate::{models::contact::{Contact, InsertContact}, Connection};
 
+pub async fn get_contact_id_by_phone_number(phone: String, conn: &mut Connection)
+-> Result<i32, Error>
+{
+    use crate::schema::contacts::dsl::*;
+
+    contacts
+        .select(id)
+        .filter(phone_number.eq(phone))
+        .first::<i32>(conn)
+        .await
+}
+
 pub async fn get_contact_by_phone_number(phone: String, conn: &mut Connection)
 -> Result<Contact, Error>
 {

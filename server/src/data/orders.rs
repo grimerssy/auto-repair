@@ -1,6 +1,6 @@
 use diesel_async::RunQueryDsl;
 use diesel::{prelude::*, insert_into, result::Error};
-use crate::{models::order::InsertOrder, Connection};
+use crate::{models::order::{InsertOrder, Order}, Connection};
 
 pub async fn insert_order(order: InsertOrder, conn: &mut Connection) -> Result<(), Error> {
     use crate::schema::orders::dsl::*;
@@ -17,4 +17,25 @@ pub async fn insert_order(order: InsertOrder, conn: &mut Connection) -> Result<(
         .execute(conn)
         .await
         .map(|_| ())
+}
+
+pub async fn get_orders_by_contact_id(contact_id: i32, conn: &mut Connection)
+-> Result<Vec<Order>, Error>
+{
+    use crate::schema::*;
+
+    orders::table
+        .inner_join(contacts::table.on(orders::contact_id.eq(contacts::id)))
+        .inner_join(services::table.on(orders::service_id.eq(services::id)))
+        .select((
+            orders::id,
+            (contacts::id, contacts::phone_number, contacts::email),
+            (services::id, services::title, services::price, services::duration),
+            orders::start_time,
+            orders::car_make,
+            orders::car_model,
+            orders::car_year))
+            .filter(orders::contact_id.eq(contact_id))
+            .load::<Order>(conn)
+            .await
 }
