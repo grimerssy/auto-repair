@@ -1,7 +1,7 @@
 use actix_web::{web::{Data, Json}, get};
 
 use super::to_server_error;
-use crate::{DbPool, models::service::Service, data::services::get_all_services};
+use crate::{data::DbPool, models::service::Service, data::services::get_all_services};
 use crate::errors::ServerError;
 
 use super::retrieve_connection;

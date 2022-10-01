@@ -2,7 +2,8 @@ use diesel::{prelude::*, insert_into, update};
 use diesel_async::RunQueryDsl;
 use diesel::result::Error;
 
-use crate::{models::contact::{Contact, InsertContact}, Connection};
+use super::Connection;
+use crate::models::contact::{Contact, InsertContact};
 
 pub async fn get_contact_id_by_phone_number(phone: String, conn: &mut Connection)
 -> Result<i32, Error>

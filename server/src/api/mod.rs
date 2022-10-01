@@ -4,7 +4,7 @@ pub mod services;
 use actix_web::web::Data;
 use diesel::result::Error;
 
-use crate::{DbPool, PooledConnection};
+use crate::data::{DbPool, PooledConnection};
 use crate::errors::{ServerError, map::to_internal_error};
 
 async fn retrieve_connection(pool: Data<DbPool>) -> Result<PooledConnection, ServerError> {

@@ -1,6 +1,7 @@
 use diesel_async::RunQueryDsl;
 use diesel::{prelude::*, insert_into, result::Error};
-use crate::{models::order::{InsertOrder, Order}, Connection};
+use super::Connection;
+use crate::models::order::{InsertOrder, Order};
 
 pub async fn insert_order(order: InsertOrder, conn: &mut Connection) -> Result<(), Error> {
     use crate::schema::orders::dsl::*;

@@ -7,13 +7,8 @@ mod routing;
 
 use data::get_connection_pool;
 use std::env;
-use diesel_async::{pooled_connection::deadpool::{Object, Pool}, AsyncPgConnection};
 use routing::configuration;
 use actix_web::{HttpServer, App};
-
-type Connection = AsyncPgConnection;
-type DbPool = Pool<Connection>;
-type PooledConnection = Object<Connection>;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

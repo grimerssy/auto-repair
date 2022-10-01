@@ -8,7 +8,7 @@ use crate::models::order::{InsertOrder, Order};
 use crate::models::contact::InsertContact;
 use crate::models::timestamp::Timestamp;
 use crate::data::contacts::{get_contact_by_phone_number, insert_contact_returning_id, update_contact_email, get_contact_id_by_phone_number};
-use crate::{DbPool, errors::{ServerError, map::to_internal_error}};
+use crate::{data::DbPool, errors::{ServerError, map::to_internal_error}};
 
 use super::retrieve_connection;
 
