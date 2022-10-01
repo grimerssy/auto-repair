@@ -16,7 +16,7 @@ diesel::table! {
         start_time -> Timestamp,
         car_make -> Varchar,
         car_model -> Varchar,
-        car_year -> Varchar,
+        car_year -> Int2,
     }
 }
 

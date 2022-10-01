@@ -5,5 +5,5 @@ CREATE TABLE orders (
     start_time TIMESTAMP NOT NULL,
     car_make VARCHAR(32) NOT NULL,
     car_model VARCHAR(32) NOT NULL,
-    car_year VARCHAR(32) NOT NULL
+    car_year SMALLINT NOT NULL
 );
