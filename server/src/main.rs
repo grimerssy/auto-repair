@@ -1,7 +1,6 @@
 mod api;
 mod data;
 mod models;
-mod errors;
 mod schema;
 mod routing;
 
