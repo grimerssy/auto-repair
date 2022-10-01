@@ -1,3 +1,7 @@
+pub mod orders;
+pub mod contacts;
+pub mod services;
+
 use diesel_async::{pooled_connection::{AsyncDieselConnectionManager, deadpool::Pool}, AsyncPgConnection};
 
 use crate::DbPool;
