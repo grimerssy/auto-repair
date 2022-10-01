@@ -49,8 +49,8 @@ impl error::ResponseError for ServerError {
 
     fn status_code(&self) -> StatusCode {
         match *self {
-            Self::ValidationError { .. } => StatusCode::BAD_REQUEST,
-            Self::NotFoundError { .. } => StatusCode::NOT_FOUND,
+            Self::NotFoundError => StatusCode::NOT_FOUND,
+            Self::ValidationError(_) => StatusCode::BAD_REQUEST,
             Self::InternalServerError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
