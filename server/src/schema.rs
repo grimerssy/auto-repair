@@ -3,7 +3,7 @@
 diesel::table! {
     contacts (id) {
         id -> Int4,
-        phone_number -> Int8,
+        phone_number -> Varchar,
         email -> Nullable<Varchar>,
     }
 }
