@@ -1,3 +1,5 @@
+pub mod services;
+
 use actix_web::web::Data;
 use diesel::result::Error;
 
