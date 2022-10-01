@@ -8,7 +8,3 @@ where
 {
     |e| ServerError::InternalServerError(format!("{}", e))
 }
-
-pub fn to_not_found_error<E>(what: String) -> impl Fn(E) -> ServerError {
-    move |_| ServerError::NotFoundError(what.clone())
-}

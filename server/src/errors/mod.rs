@@ -13,16 +13,16 @@ use serde::Serialize;
 #[allow(clippy::enum_variant_names)]
 #[derive(Debug)]
 pub enum ServerError {
+    NotFoundError,
     ValidationError(String),
-    NotFoundError(String),
     InternalServerError(String),
 }
 
 impl Display for ServerError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            ServerError::NotFoundError => write!(f, "Requested resource was not found"),
             ServerError::ValidationError(reason) => write!(f, "Validation failed: {}", reason),
-            ServerError::NotFoundError(what) => write!(f, "Requested {} was not found", what),
             ServerError::InternalServerError(_) => write!(f, "An unexpected error occurred"),
         }
     }
