@@ -1,3 +1,4 @@
+pub mod orders;
 pub mod services;
 
 use actix_web::web::Data;
