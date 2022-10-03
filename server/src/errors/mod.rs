@@ -10,20 +10,19 @@ use actix_web::{
 };
 use serde::Serialize;
 
-#[allow(clippy::enum_variant_names)]
 #[derive(Debug)]
 pub enum ServerError {
-    NotFoundError,
-    ValidationError(String),
-    InternalServerError(String),
+    FailToParse(String),
+    NotFound,
+    Internal(String),
 }
 
 impl Display for ServerError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ServerError::NotFoundError => write!(f, "Requested resource was not found"),
-            ServerError::ValidationError(reason) => write!(f, "Validation failed: {}", reason),
-            ServerError::InternalServerError(_) => write!(f, "An unexpected error occurred"),
+            Self::FailToParse(msg) => write!(f, "Parsing error: {}", msg),
+            Self::NotFound => write!(f, "Requested resource was not found"),
+            Self::Internal(_) => write!(f, "An unexpected error occurred"),
         }
     }
 }
@@ -49,9 +48,9 @@ impl error::ResponseError for ServerError {
 
     fn status_code(&self) -> StatusCode {
         match *self {
-            Self::NotFoundError => StatusCode::NOT_FOUND,
-            Self::ValidationError(_) => StatusCode::BAD_REQUEST,
-            Self::InternalServerError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::FailToParse(_) => StatusCode::BAD_REQUEST,
+            Self::NotFound => StatusCode::NOT_FOUND,
+            Self::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }

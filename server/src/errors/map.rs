@@ -6,5 +6,5 @@ pub fn to_internal_error<E>() -> impl Fn(E) -> ServerError
 where
     E: Display,
 {
-    |e| ServerError::InternalServerError(format!("{}", e))
+    |e| ServerError::Internal(e.to_string())
 }

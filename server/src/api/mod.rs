@@ -15,8 +15,8 @@ async fn retrieve_connection(pool: Data<DbPool>) -> Result<PooledConnection, Ser
 fn to_server_error() -> impl Fn(Error) -> ServerError {
     |e| {
         match e {
-            Error::NotFound => ServerError::NotFoundError,
-            _ => ServerError::InternalServerError(format!("{}", e))
+            Error::NotFound => ServerError::NotFound,
+            _ => ServerError::Internal(format!("{}", e))
         }
     }
 }
