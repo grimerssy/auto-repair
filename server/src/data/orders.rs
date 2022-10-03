@@ -1,7 +1,7 @@
 use diesel_async::RunQueryDsl;
 use diesel::{prelude::*, insert_into, result::Error};
 use super::Connection;
-use crate::models::order::{InsertOrder, Order};
+use crate::models::{order::{InsertOrder, Order}, id::Id};
 
 pub async fn insert_order(order: InsertOrder, conn: &mut Connection) -> Result<(), Error> {
     use crate::schema::orders::dsl::*;
@@ -20,7 +20,7 @@ pub async fn insert_order(order: InsertOrder, conn: &mut Connection) -> Result<(
         .map(|_| ())
 }
 
-pub async fn get_orders_by_contact_id(contact_id: i32, conn: &mut Connection)
+pub async fn get_orders_by_contact_id(contact_id: Id, conn: &mut Connection)
 -> Result<Vec<Order>, Error>
 {
     use crate::schema::*;

@@ -4,6 +4,8 @@ use diesel::result::Error;
 use serde::Deserialize;
 
 use crate::data::orders::{insert_order, get_orders_by_contact_id};
+use crate::models::id::Id;
+use crate::models::id::keys::Keys;
 use crate::models::order::{InsertOrder, Order};
 use crate::models::contact::InsertContact;
 use crate::models::timestamp::Timestamp;
@@ -16,7 +18,7 @@ use super::retrieve_connection;
 pub struct MakeOrderRequest {
     phone_number: String,
     email: Option<String>,
-    service_id: i32,
+    service_id: Id,
     start_time: Timestamp,
     car_make: String,
     car_model: String,
@@ -24,7 +26,10 @@ pub struct MakeOrderRequest {
 }
 
 #[post("")]
-pub async fn make_order(req_body: Json<MakeOrderRequest>, db_pool: Data<DbPool>)
+pub async fn make_order(
+    req_body: Json<MakeOrderRequest>,
+    db_pool: Data<DbPool>,
+    keys: Data<Keys>)
 -> Result<HttpResponse, ServerError>
 {
     let conn = &mut retrieve_connection(db_pool).await?;
@@ -51,9 +56,12 @@ pub async fn make_order(req_body: Json<MakeOrderRequest>, db_pool: Data<DbPool>)
             }
         };
 
+        let mut service_id = req_body.service_id;
+        service_id.decode(keys.services);
+
         let order = InsertOrder {
             contact_id,
-            service_id: req_body.service_id,
+            service_id,
             start_time: req_body.start_time,
             car_make: req_body.car_make.clone(),
             car_model: req_body.car_model.clone(),
@@ -72,7 +80,9 @@ pub struct GetByContactQuery {
 
 #[get("")]
 pub async fn get_by_contact(
-    query: Query<GetByContactQuery>, db_pool: Data<DbPool>)
+    query: Query<GetByContactQuery>,
+    db_pool: Data<DbPool>,
+    keys: Data<Keys>)
 -> Result<Json<Vec<Order>>, ServerError>
 {
     let conn = &mut retrieve_connection(db_pool).await?;
@@ -82,9 +92,14 @@ pub async fn get_by_contact(
         .await
         .map_err(to_internal_error())?;
 
-    let orders = get_orders_by_contact_id(contact_id, conn)
+    let mut orders = get_orders_by_contact_id(contact_id, conn)
         .await
         .map_err(to_internal_error())?;
+    orders.iter_mut().for_each(|o| {
+        o.id.encode(keys.orders);
+        o.contact.id.encode(keys.contacts);
+        o.service.id.encode(keys.services);
+    });
 
     Ok(Json(orders))
 }

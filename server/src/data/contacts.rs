@@ -3,17 +3,17 @@ use diesel_async::RunQueryDsl;
 use diesel::result::Error;
 
 use super::Connection;
-use crate::models::contact::{Contact, InsertContact};
+use crate::models::{contact::{Contact, InsertContact}, id::Id};
 
 pub async fn get_contact_id_by_phone_number(phone: String, conn: &mut Connection)
--> Result<i32, Error>
+-> Result<Id, Error>
 {
     use crate::schema::contacts::dsl::*;
 
     contacts
         .select(id)
         .filter(phone_number.eq(phone))
-        .first::<i32>(conn)
+        .first::<Id>(conn)
         .await
 }
 
@@ -29,7 +29,7 @@ pub async fn get_contact_by_phone_number(phone: String, conn: &mut Connection)
 }
 
 pub async fn insert_contact_returning_id(contact: InsertContact, conn: &mut Connection)
--> Result<i32, Error>
+-> Result<Id, Error>
 {
     use crate::schema::contacts::dsl::*;
 

@@ -1,11 +1,11 @@
 use diesel::Queryable;
 use serde::Serialize;
 
-use super::{money::Money, time::Time};
+use super::{id::Id, money::Money, time::Time};
 
 #[derive(Queryable, Serialize)]
 pub struct Service {
-    pub id: i32,
+    pub id: Id,
     pub title: String,
     pub price: Money,
     pub duration: Time,
