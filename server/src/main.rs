@@ -5,6 +5,7 @@ mod errors;
 mod schema;
 mod routing;
 
+use actix_cors::Cors;
 use data::get_connection_pool;
 use models::id::keys::{Keys, Key};
 use std::env;
@@ -15,6 +16,7 @@ use actix_web::{HttpServer, App, web::Data};
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
 
+    let client_host = env::var("CLIENT_HOST").unwrap();
     let database_url = env::var("DATABASE_URL").unwrap();
     let keys = Keys{
         contacts: Key::new(
@@ -35,6 +37,12 @@ async fn main() -> std::io::Result<()> {
         let database_url = database_url.clone();
 
         App::new()
+            .wrap(
+                Cors::default()
+                    .allowed_origin(&client_host.clone())
+                    .allowed_methods(vec!["GET", "POST"])
+                    .allow_any_header()
+            )
             .app_data(Data::new(keys))
             .data_factory(move || get_connection_pool(database_url.clone()))
             .configure(configuration)
