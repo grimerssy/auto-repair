@@ -1,13 +1,49 @@
+use core::fmt;
+use std::str::FromStr;
+
 use diesel::deserialize::{self, FromSql, FromSqlRow};
 use diesel::expression::AsExpression;
 use diesel::pg::{Pg, PgValue};
 use diesel::serialize::{self, Output, ToSql};
 use diesel::sql_types;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
+
+use crate::errors::ServerError;
+
+static MINUTE: i64 = 60_000_000;
+static HOUR: i64 = 60 * MINUTE;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, AsExpression, FromSqlRow)]
 #[diesel(sql_type = sql_types::Time)]
 pub struct Time(i64);
+
+impl fmt::Display for Time {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let time = self.0 % (24 * HOUR);
+        let hours = time / HOUR;
+        let minutes = (time - hours * HOUR) / MINUTE;
+        write!(f, "{:0>2}:{:0>2}", hours, minutes)
+    }
+}
+
+impl FromStr for Time {
+    type Err = ServerError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let err_msg = "invalid time format".to_string();
+        let split = s.split(':').collect::<Vec<&str>>();
+        if split.len() != 2 {
+            return Err(ServerError::FailToParse(err_msg));
+        }
+        let hours = split[0]
+            .parse::<i64>()
+            .map_err(|_| ServerError::FailToParse(err_msg.clone()))?;
+        let minutes = split[1]
+            .parse::<i64>()
+            .map_err(|_| ServerError::FailToParse(err_msg.clone()))?;
+        Ok(Time(hours * HOUR + minutes * MINUTE))
+    }
+}
 
 impl ToSql<sql_types::Time, Pg> for Time {
     fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Pg>) -> serialize::Result {
@@ -26,7 +62,7 @@ impl Serialize for Time {
     where
         S: Serializer,
     {
-        serializer.serialize_i64(self.0)
+        serializer.serialize_str(&self.to_string())
     }
 }
 
@@ -35,7 +71,7 @@ impl<'de> Deserialize<'de> for Time {
     where
         D: Deserializer<'de>,
     {
-        let microseconds = i64::deserialize(deserializer)?;
-        Ok(Time(microseconds))
+        let str = String::deserialize(deserializer)?;
+        Time::from_str(&str).map_err(D::Error::custom)
     }
 }
