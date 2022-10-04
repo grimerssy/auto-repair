@@ -1,6 +1,6 @@
 use diesel_async::RunQueryDsl;
 use diesel::{prelude::*, insert_into, result::Error};
-use super::Connection;
+use super::{Connection, TIMESTAMP_FORMAT, to_char, to_timestamp};
 use crate::models::{order::{InsertOrder, Order}, id::Id};
 
 pub async fn insert_order(order: InsertOrder, conn: &mut Connection) -> Result<(), Error> {
@@ -10,7 +10,7 @@ pub async fn insert_order(order: InsertOrder, conn: &mut Connection) -> Result<(
         .values((
             contact_id.eq(order.contact_id),
             service_id.eq(order.service_id),
-            start_time.eq(order.start_time),
+            start_time.eq(to_timestamp(order.start_time, TIMESTAMP_FORMAT)),
             car_make.eq(order.car_make),
             car_model.eq(order.car_model),
             car_year.eq(order.car_year),
@@ -32,7 +32,7 @@ pub async fn get_orders_by_contact_id(contact_id: Id, conn: &mut Connection)
             orders::id,
             (contacts::id, contacts::phone_number, contacts::email),
             (services::id, services::title, services::price, services::duration),
-            orders::start_time,
+            to_char(orders::start_time, TIMESTAMP_FORMAT),
             orders::car_make,
             orders::car_model,
             orders::car_year))

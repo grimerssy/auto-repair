@@ -8,7 +8,6 @@ use crate::models::id::Id;
 use crate::models::id::keys::Keys;
 use crate::models::order::{InsertOrder, Order};
 use crate::models::contact::InsertContact;
-use crate::models::timestamp::Timestamp;
 use crate::data::contacts::{get_contact_by_phone_number, insert_contact_returning_id, update_contact_email, get_contact_id_by_phone_number};
 use crate::{data::DbPool, errors::{ServerError, map::to_internal_error}};
 
@@ -19,7 +18,7 @@ pub struct MakeOrderRequest {
     phone_number: String,
     email: Option<String>,
     service_id: Id,
-    start_time: Timestamp,
+    start_time: String,
     car_make: String,
     car_model: String,
     car_year: i16,
@@ -62,7 +61,7 @@ pub async fn make_order(
         let order = InsertOrder {
             contact_id,
             service_id,
-            start_time: req_body.start_time,
+            start_time: req_body.start_time.clone(),
             car_make: req_body.car_make.clone(),
             car_model: req_body.car_model.clone(),
             car_year: req_body.car_year,
