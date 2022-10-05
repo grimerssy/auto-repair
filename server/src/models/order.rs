@@ -15,6 +15,7 @@ pub struct RawOrder {
 }
 
 #[derive(Queryable, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Order {
     pub id: Id,
     pub contact: Contact,

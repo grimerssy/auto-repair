@@ -14,6 +14,7 @@ use crate::{data::DbPool, errors::{ServerError, map::to_internal_error}};
 use super::retrieve_connection;
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct MakeOrderRequest {
     phone_number: String,
     email: Option<String>,
