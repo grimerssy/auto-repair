@@ -1,14 +1,14 @@
 use actix_web::{post, HttpResponse, get};
-use actix_web::web::{Json, Data, Query};
+use actix_web::web::{Json, Data};
 use diesel::result::Error;
 use serde::Deserialize;
 
-use crate::data::orders::{insert_order, get_orders_by_contact_id};
+use crate::data::orders::{insert_order, get_all_orders};
 use crate::models::id::Id;
 use crate::models::id::keys::Keys;
 use crate::models::order::{InsertOrder, Order};
 use crate::models::contact::InsertContact;
-use crate::data::contacts::{get_contact_by_phone_number, insert_contact_returning_id, update_contact_email, get_contact_id_by_phone_number};
+use crate::data::contacts::{get_contact_by_phone_number, insert_contact_returning_id, update_contact_email};
 use crate::{data::DbPool, errors::{ServerError, map::to_internal_error}};
 
 use super::retrieve_connection;
@@ -73,26 +73,15 @@ pub async fn make_order(
         .map_err(to_internal_error())
 }
 
-#[derive(Deserialize)]
-pub struct GetByContactQuery {
-    phone_number: String,
-}
-
 #[get("")]
-pub async fn get_by_contact(
-    query: Query<GetByContactQuery>,
+pub async fn get_all(
     db_pool: Data<DbPool>,
     keys: Data<Keys>)
 -> Result<Json<Vec<Order>>, ServerError>
 {
     let conn = &mut retrieve_connection(db_pool).await?;
 
-    let contact_id =
-        get_contact_id_by_phone_number(query.phone_number.clone(), conn)
-        .await
-        .map_err(to_internal_error())?;
-
-    let mut orders = get_orders_by_contact_id(contact_id, conn)
+    let mut orders = get_all_orders(conn)
         .await
         .map_err(to_internal_error())?;
     orders.iter_mut().for_each(|o| {

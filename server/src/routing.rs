@@ -7,7 +7,7 @@ pub fn configuration(cfg: &mut web::ServiceConfig) {
             .service(
                 web::scope("orders")
                     .service(orders::make_order)
-                    .service(orders::get_by_contact),
+                    .service(orders::get_all),
             )
             .service(
                 web::scope("/services")
