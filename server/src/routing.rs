@@ -9,6 +9,10 @@ pub fn configuration(cfg: &mut web::ServiceConfig) {
                     .service(orders::make_order)
                     .service(orders::get_by_contact),
             )
-            .service(web::scope("/services").service(services::get_all)),
+            .service(
+                web::scope("/services")
+                    .service(services::get_all)
+                    .service(services::get_by_id),
+            ),
     );
 }

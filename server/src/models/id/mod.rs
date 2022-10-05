@@ -26,7 +26,7 @@ fn init_from_digit() -> impl Fn(u8) -> Result<i32, ServerError> {
     move |d| {
         map.get(&d)
             .copied()
-            .ok_or_else(|| ServerError::FailToParse("invalid id digit".into()))
+            .ok_or_else(|| ServerError::FailToParse("invalid id format".into()))
     }
 }
 
