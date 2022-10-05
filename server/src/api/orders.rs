@@ -41,7 +41,7 @@ pub async fn make_order(
         let contact_id = match contact_result {
             Ok(mut contact) => {
                 let id = contact.id;
-                if contact.email == None && req_body.email.clone() != None {
+                if req_body.email.clone() != None {
                     contact.email = req_body.email.clone();
                     update_contact_email(contact, conn).await?;
                 }
