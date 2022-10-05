@@ -44,3 +44,10 @@ export const postOrder = ({
     },
   });
 };
+
+export const getAllOrders = () => {
+  const url = server_host + "/orders";
+  return fetch(url).then((res) => {
+    return res.json();
+  });
+};

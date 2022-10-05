@@ -2,6 +2,7 @@ import Header from "./components/header.tsx";
 import { Route, Routes } from "react-router-dom";
 import Home from "./pages/home.tsx";
 import BookService from "./pages/bookService.tsx";
+import Orders from "./pages/orders.tsx";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/services/:id" element={<BookService />} />
+          <Route path="/orders" element={<Orders />} />
         </Routes>
       </div>
     </div>

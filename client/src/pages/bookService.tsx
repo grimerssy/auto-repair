@@ -24,7 +24,7 @@ const BookService = () => {
       carYear: carYear,
     }).then((res) => {
       let newMessage = res.ok
-        ? "Operation successful"
+        ? "Successfully booked"
         : "An error occurred, try again later";
       setMessage(newMessage);
     });
