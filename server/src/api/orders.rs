@@ -1,9 +1,9 @@
 use actix_web::{post, HttpResponse, get};
-use actix_web::web::{Json, Data};
+use actix_web::web::{Json, Data, Path};
 use diesel::result::Error;
 use serde::Deserialize;
 
-use crate::data::orders::{insert_order, get_all_orders};
+use crate::data::orders::{insert_order, get_all_orders, get_orders_by_service_id};
 use crate::models::id::Id;
 use crate::models::id::keys::Keys;
 use crate::models::order::{InsertOrder, Order};
@@ -82,6 +82,30 @@ pub async fn get_all(
     let conn = &mut retrieve_connection(db_pool).await?;
 
     let mut orders = get_all_orders(conn)
+        .await
+        .map_err(to_internal_error())?;
+    orders.iter_mut().for_each(|o| {
+        o.id.encode(keys.orders);
+        o.contact.id.encode(keys.contacts);
+        o.service.id.encode(keys.services);
+    });
+
+    Ok(Json(orders))
+}
+
+#[get("/{id}")]
+pub async fn get_by_service_id(
+    path: Path<Id>,
+    db_pool: Data<DbPool>,
+    keys: Data<Keys>)
+-> Result<Json<Vec<Order>>, ServerError>
+{
+    let mut service_id = path.into_inner();
+    service_id.decode(keys.services);
+
+    let conn = &mut retrieve_connection(db_pool).await?;
+
+    let mut orders = get_orders_by_service_id(service_id, conn)
         .await
         .map_err(to_internal_error())?;
     orders.iter_mut().for_each(|o| {
