@@ -51,3 +51,10 @@ export const getAllOrders = () => {
     return res.json();
   });
 };
+
+export const getOrdersByServiceId = (id) => {
+  const url = server_host + "/orders/" + id;
+  return fetch(url).then((res) => {
+    return res.json();
+  });
+};

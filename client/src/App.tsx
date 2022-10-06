@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import Home from "./pages/home.tsx";
 import BookService from "./pages/bookService.tsx";
 import Orders from "./pages/orders.tsx";
+import OrdersByService from "./pages/ordersByService.tsx";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/services/:id" element={<BookService />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/orders/:id" element={<OrdersByService />} />
         </Routes>
       </div>
     </div>
