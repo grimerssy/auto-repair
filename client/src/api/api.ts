@@ -35,7 +35,6 @@ export const postOrder = ({
   if (email !== "") {
     obj.email = email;
   }
-  console.log(obj);
   return fetch(url, {
     method: "POST",
     body: JSON.stringify(obj),
