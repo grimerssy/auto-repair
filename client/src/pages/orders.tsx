@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { getAllOrders } from "../api/api.ts";
+import { Typography } from "@mui/material";
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -14,23 +15,27 @@ const Orders = () => {
     <div className="flex flex-col justify-center items-center">
       {orders.map((o, i) => (
         <div id={o.id} className="rounded bg-gray-200 p-10 my-8">
-          <p className="text-lg font-semibold">{o.service.title}</p>
-          <div className="ml-10 flex flex-col justify-center">
-            <p className="text-left">Start time: {o.startTime}</p>
-            <p className="text-left">Duration: {o.service.duration}</p>
+          <Typography sx={{ mb: 2 }} variant="h5" style={{ fontWeight: 600 }}>
+            {o.service.title}
+          </Typography>
+          <div className="ml-10 my-2 flex flex-col justify-center">
+            <Typography align="left">Start time: {o.startTime}</Typography>
+            <Typography align="left">Duration: {o.service.duration}</Typography>
           </div>
-          <p className="text-lg mt-6">Contacts</p>
-          <div className="ml-10 flex flex-col justify-center">
-            <p className="text-left">{o.contact.phoneNumber}</p>
+          <Typography variant="h6">Contacts</Typography>
+          <div className="ml-10 my-2 flex flex-col justify-center">
+            <Typography align="left">{o.contact.phoneNumber}</Typography>
             {o.contact.email ? (
-              <p className="text-left">{o.contact.email}</p>
+              <Typography align="left">{o.contact.email}</Typography>
             ) : null}
           </div>
-          <p className="text-lg mt-6">Car</p>
+          <Typography sx={{ mb: 2 }} variant="h6">
+            Car
+          </Typography>
           <div className="ml-10 flex flex-col justify-center">
-            <p className="text-left">{o.carMake}</p>
-            <p className="text-left">{o.carModel}</p>
-            <p className="text-left">{o.carYear}</p>
+            <Typography align="left">{o.carMake}</Typography>
+            <Typography align="left">{o.carModel}</Typography>
+            <Typography align="left">{o.carYear}</Typography>
           </div>
         </div>
       ))}
