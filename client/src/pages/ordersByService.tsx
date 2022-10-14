@@ -1,9 +1,10 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { getService, getOrdersByServiceId } from "../api/api.ts";
+import { getService, getOrdersByServiceId } from "../api/api";
 import {
+  Box,
+  Grid,
   Typography,
-  Paper,
   TableContainer,
   Table,
   TableHead,
@@ -11,45 +12,63 @@ import {
   TableRow,
   TableCell,
 } from "@mui/material";
+import { Order, Service } from "models";
 
 const OrdersByService = () => {
   const { id } = useParams();
-  const [service, setService] = useState({});
-  const [orders, setOrders] = useState([]);
+  const [service, setService] = useState<Service>({
+    id: "",
+    title: "",
+    price: 0,
+    duration: "",
+  });
+  const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
-    getService(id).then((data) => {
+    getService(id || "").then((data) => {
       setService(data);
     });
   }, []);
   useEffect(() => {
-    getOrdersByServiceId(id).then((data) => {
+    getOrdersByServiceId(id || "").then((data) => {
       setOrders(data);
     });
   }, []);
 
   return (
-    <div className="flex flex-col justify-center items-center p-10 rounded bg-gray-200 w-3/4 mt-10 mx-auto">
-      <div className="flex flex-row justify-around items-center w-3/4 my-4">
+    <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
+      <Box sx={{ p: 4, borderRadius: 2, bgcolor: "secondary.main" }}>
         {!service.id ? (
-          <Typography variant="h5">Invalid service id</Typography>
+          <Typography align="center" variant="h5" sx={{ m: 4 }}>
+            Invalid service id
+          </Typography>
         ) : (
-          <div>
-            <div className="flex flex-row justify-around items-center">
-              <Typography variant="h6" style={{ fontWeight: 600 }}>
-                {service.title}
-              </Typography>
-              <Typography variant="h6">{service.duration}</Typography>
-              <Typography variant="h6">{service.price}₴</Typography>
-            </div>
+          <>
+            <Typography align="center" variant="h5" style={{ fontWeight: 600 }}>
+              {service.title}
+            </Typography>
+            <Grid container>
+              <Grid item xs={6}>
+                <Typography align="center" variant="h6">
+                  {service.duration}
+                </Typography>
+              </Grid>
+              <Grid item xs={6}>
+                <Typography align="center" variant="h6">
+                  {service.price}₴
+                </Typography>
+              </Grid>
+            </Grid>
             {orders.length === 0 ? (
-              <Typography variant="h5">No such orders at the moment</Typography>
+              <Typography align="center" variant="h5" sx={{ m: 4 }}>
+                No such orders at the moment
+              </Typography>
             ) : (
-              <div>
-                <Typography variant="h5" sx={{ my: 6 }}>
+              <>
+                <Typography variant="h6" sx={{ m: 2, mt: 6 }}>
                   Orders
                 </Typography>
-                <TableContainer component={Paper}>
+                <TableContainer>
                   <Table>
                     <TableHead>
                       <TableRow>
@@ -63,7 +82,7 @@ const OrdersByService = () => {
                     </TableHead>
                     <TableBody>
                       {orders.map((o, i) => (
-                        <TableRow>
+                        <TableRow key={i}>
                           <TableCell>{o.startTime}</TableCell>
                           <TableCell>{o.contact.phoneNumber}</TableCell>
                           <TableCell>{o.contact.email}</TableCell>
@@ -75,12 +94,12 @@ const OrdersByService = () => {
                     </TableBody>
                   </Table>
                 </TableContainer>
-              </div>
+              </>
             )}
-          </div>
+          </>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

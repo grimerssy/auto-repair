@@ -1,40 +1,36 @@
 const server_host = "http://127.0.0.1:8080/api";
 
-export const getAllServices = () => {
+export const getAllServices = async () => {
   const url = server_host + "/services";
-  return fetch(url).then((res) => {
-    return res.json();
-  });
+  const res = await fetch(url);
+  return await res.json();
 };
 
-export const getService = (id) => {
+export const getService = async (id: string) => {
   const url = server_host + "/services/" + id;
-  return fetch(url).then((res) => {
-    return res.json();
-  });
+  const res = await fetch(url);
+  return await res.json();
 };
 
-export const postOrder = ({
-  serviceId,
-  phoneNumber,
-  email,
-  startTime,
-  carMake,
-  carModel,
-  carYear,
+export const postOrder = (order: {
+  serviceId: string;
+  phoneNumber: string;
+  email: string | null;
+  startTime: string;
+  carMake: string;
+  carModel: string;
+  carYear: number;
 }) => {
   const url = server_host + "/orders";
   let obj = {
-    serviceId: serviceId,
-    phoneNumber: phoneNumber,
-    startTime: startTime,
-    carMake: carMake,
-    carModel: carModel,
-    carYear: +carYear,
+    serviceId: order.serviceId,
+    phoneNumber: order.phoneNumber,
+    email: order.email,
+    startTime: order.startTime,
+    carMake: order.carMake,
+    carModel: order.carModel,
+    carYear: order.carYear,
   };
-  if (email !== "") {
-    obj.email = email;
-  }
   return fetch(url, {
     method: "POST",
     body: JSON.stringify(obj),
@@ -44,16 +40,14 @@ export const postOrder = ({
   });
 };
 
-export const getAllOrders = () => {
+export const getAllOrders = async () => {
   const url = server_host + "/orders";
-  return fetch(url).then((res) => {
-    return res.json();
-  });
+  const res = await fetch(url);
+  return await res.json();
 };
 
-export const getOrdersByServiceId = (id) => {
+export const getOrdersByServiceId = async (id: string) => {
   const url = server_host + "/orders/" + id;
-  return fetch(url).then((res) => {
-    return res.json();
-  });
+  const res = await fetch(url);
+  return await res.json();
 };
