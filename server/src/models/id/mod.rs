@@ -26,7 +26,7 @@ fn init_from_digit() -> impl Fn(u8) -> Result<i32, ServerError> {
     move |d| {
         map.get(&d)
             .copied()
-            .ok_or_else(|| ServerError::FailToParse("invalid id format".into()))
+            .ok_or_else(|| ServerError::BadRequest("invalid id format".into()))
     }
 }
 
@@ -87,7 +87,7 @@ impl FromStr for Id {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         const LEN: usize = 6;
         if s.len() > LEN {
-            return Err(ServerError::FailToParse("invalid id format".into()));
+            return Err(ServerError::BadRequest("invalid id format".into()));
         }
         let radix = DIGITS.len() as i32;
         let mut result = 0;

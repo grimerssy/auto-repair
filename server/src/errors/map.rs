@@ -8,7 +8,7 @@ pub fn from_diesel_error() -> impl Fn(Error) -> ServerError {
     |e| match e {
         Error::NotFound => ServerError::NotFound,
         Error::InvalidCString(_) => {
-            ServerError::FailToParse("string contains null character".into())
+            ServerError::BadRequest("string contains null character".into())
         }
         _ => ServerError::Internal(e.to_string()),
     }

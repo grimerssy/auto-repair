@@ -33,14 +33,14 @@ impl FromStr for Time {
         let err_msg = "invalid time format".to_string();
         let split = s.split(':').collect::<Vec<&str>>();
         if split.len() != 2 {
-            return Err(ServerError::FailToParse(err_msg));
+            return Err(ServerError::BadRequest(err_msg));
         }
         let hours = split[0]
             .parse::<i64>()
-            .map_err(|_| ServerError::FailToParse(err_msg.clone()))?;
+            .map_err(|_| ServerError::BadRequest(err_msg.clone()))?;
         let minutes = split[1]
             .parse::<i64>()
-            .map_err(|_| ServerError::FailToParse(err_msg.clone()))?;
+            .map_err(|_| ServerError::BadRequest(err_msg.clone()))?;
         Ok(Time(hours * HOUR + minutes * MINUTE))
     }
 }

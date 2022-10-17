@@ -12,7 +12,7 @@ use serde::Serialize;
 
 #[derive(Debug)]
 pub enum ServerError {
-    FailToParse(String),
+    BadRequest(String),
     NotFound,
     Internal(String),
 }
@@ -20,7 +20,7 @@ pub enum ServerError {
 impl Display for ServerError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::FailToParse(msg) => write!(f, "Parsing error: {}", msg),
+            Self::BadRequest(msg) => write!(f, "Bad request: {}", msg),
             Self::NotFound => write!(f, "Requested resource was not found"),
             Self::Internal(_) => write!(f, "An unexpected error occurred"),
         }
@@ -48,7 +48,7 @@ impl error::ResponseError for ServerError {
 
     fn status_code(&self) -> StatusCode {
         match *self {
-            Self::FailToParse(_) => StatusCode::BAD_REQUEST,
+            Self::BadRequest(_) => StatusCode::BAD_REQUEST,
             Self::NotFound => StatusCode::NOT_FOUND,
             Self::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
