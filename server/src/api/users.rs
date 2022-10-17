@@ -10,7 +10,7 @@ use crate::{
         users::insert_user
     },
     models::{user::InsertUser, contact::InsertContact},
-    errors::{ServerError, map::to_internal_error},
+    errors::{ServerError, map::{to_internal_error, from_diesel_error}},
     BcryptCfg
 };
 
@@ -40,7 +40,7 @@ pub async fn signup(
     };
     let contact_id = get_contact_id_by_pn_create_if_absent(insert_contact, conn)
         .await
-        .map_err(to_internal_error())?;
+        .map_err(from_diesel_error())?;
     let password_hash = hash(req_body.password.clone(), bcrypt_cfg.cost)
         .map_err(to_internal_error())?;
     let user = InsertUser {
@@ -54,5 +54,5 @@ pub async fn signup(
     insert_user(user, conn)
         .await
         .map(|_| HttpResponse::Created().finish())
-        .map_err(to_internal_error())
+        .map_err(from_diesel_error())
 }

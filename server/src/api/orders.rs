@@ -4,12 +4,13 @@ use diesel::result::Error;
 use serde::Deserialize;
 
 use crate::data::orders::{insert_order, get_all_orders, get_orders_by_service_id};
+use crate::errors::map::from_diesel_error;
 use crate::models::id::Id;
 use crate::models::id::keys::Keys;
 use crate::models::order::{InsertOrder, Order};
 use crate::models::contact::InsertContact;
 use crate::data::contacts::get_contact_id_by_pn_create_if_absent;
-use crate::{data::DbPool, errors::{ServerError, map::to_internal_error}};
+use crate::{data::DbPool, errors::ServerError};
 
 use super::retrieve_connection;
 
@@ -56,7 +57,7 @@ pub async fn make_order(
         insert_order(order, conn).await
     })}).await
         .map(|_| HttpResponse::Created().finish())
-        .map_err(to_internal_error())
+        .map_err(from_diesel_error())
 }
 
 #[get("")]
@@ -69,7 +70,7 @@ pub async fn get_all(
 
     let mut orders = get_all_orders(conn)
         .await
-        .map_err(to_internal_error())?;
+        .map_err(from_diesel_error())?;
     orders.iter_mut().for_each(|o| {
         o.id.encode(keys.orders);
         o.contact.id.encode(keys.contacts);
@@ -93,7 +94,7 @@ pub async fn get_by_service_id(
 
     let mut orders = get_orders_by_service_id(service_id, conn)
         .await
-        .map_err(to_internal_error())?;
+        .map_err(from_diesel_error())?;
     orders.iter_mut().for_each(|o| {
         o.id.encode(keys.orders);
         o.contact.id.encode(keys.contacts);
