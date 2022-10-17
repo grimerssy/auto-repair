@@ -5,6 +5,8 @@ CREATE TABLE users (
     first_name VARCHAR(32) NOT NULL,
     middle_name VARCHAR(32),
     last_name VARCHAR(32) NOT NULL,
+    age SMALLINT NOT NULL,
+    sex BOOLEAN NOT NULL,
     date_of_birth Date NOT NULL,
     registered_at TIMESTAMP NOT NULL DEFAULT NOW()
 );

@@ -12,6 +12,8 @@ pub struct RawUser {
     pub first_name: String,
     pub middle_name: Option<String>,
     pub last_name: String,
+    pub age: i16,
+    pub sex: bool,
     pub date_of_birth: String,
     pub registered_at: String,
 }
@@ -25,6 +27,8 @@ pub struct User {
     pub first_name: String,
     pub middle_name: Option<String>,
     pub last_name: String,
+    pub age: i16,
+    pub sex: bool,
     pub date_of_birth: String,
     pub registered_at: String,
 }
@@ -35,5 +39,7 @@ pub struct InsertUser {
     pub first_name: String,
     pub middle_name: Option<String>,
     pub last_name: String,
+    pub age: i16,
+    pub sex: bool,
     pub date_of_birth: String,
 }
