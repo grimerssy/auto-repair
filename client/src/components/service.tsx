@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Box, Grid, Typography } from "@mui/material";
 import { Service } from "../models.js";
 
-const ServiceComponent = (service: Service) => {
+const Service = (service: Service) => {
   return (
     <Box
       sx={{
@@ -50,4 +50,4 @@ const ServiceComponent = (service: Service) => {
   );
 };
 
-export default ServiceComponent;
+export default Service;
