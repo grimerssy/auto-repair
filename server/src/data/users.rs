@@ -16,7 +16,7 @@ pub async fn insert_user(user: InsertUser, conn: &mut Connection) -> Result<(), 
             first_name.eq(user.first_name),
             middle_name.eq(user.middle_name),
             last_name.eq(user.last_name),
-            dob.eq(to_date(user.dob, DATE_FORMAT)),
+            date_of_birth.eq(to_date(user.date_of_birth, DATE_FORMAT)),
         ))
         .execute(conn)
         .await

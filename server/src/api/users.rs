@@ -23,7 +23,7 @@ pub struct SignupRequest {
     first_name: String,
     middle_name: Option<String>,
     last_name: String,
-    dob: String,
+    date_of_birth: String,
 }
 
 
@@ -49,7 +49,7 @@ pub async fn signup(
         first_name: req_body.first_name.clone(),
         middle_name: req_body.middle_name.clone(),
         last_name: req_body.last_name.clone(),
-        dob: req_body.dob.clone(),
+        date_of_birth: req_body.date_of_birth.clone(),
     };
     insert_user(user, conn)
         .await

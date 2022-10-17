@@ -32,12 +32,12 @@ diesel::table! {
 diesel::table! {
     users (id) {
         id -> Int4,
-        password_hash -> Varchar,
         contact_id -> Int4,
+        password_hash -> Varchar,
         first_name -> Varchar,
         middle_name -> Nullable<Varchar>,
         last_name -> Varchar,
-        dob -> Date,
+        date_of_birth -> Date,
         registered_at -> Timestamp,
     }
 }
