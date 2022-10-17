@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 actix-cors = "0.6.3"
 actix-web = "4.2.1"
+bcrypt = "0.13.0"
 diesel = { version = "2.0.0", features = ["postgres", "r2d2"] }
 diesel-async = { git = "https://github.com/weiznich/diesel_async", version = "0.1.0", features = ["postgres", "deadpool"] }
 dotenv = "0.15.0"

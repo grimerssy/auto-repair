@@ -1,5 +1,6 @@
 pub mod orders;
 pub mod services;
+pub mod users;
 
 use actix_web::web::Data;
 use diesel::result::Error;

@@ -8,7 +8,7 @@ use crate::models::id::Id;
 use crate::models::id::keys::Keys;
 use crate::models::order::{InsertOrder, Order};
 use crate::models::contact::InsertContact;
-use crate::data::contacts::{get_contact_by_phone_number, insert_contact_returning_id, update_contact_email};
+use crate::data::contacts::get_contact_id_by_pn_create_if_absent;
 use crate::{data::DbPool, errors::{ServerError, map::to_internal_error}};
 
 use super::retrieve_connection;
@@ -35,26 +35,12 @@ pub async fn make_order(
     let conn = &mut retrieve_connection(db_pool).await?;
 
     conn.build_transaction().run::<(), Error, _>(|conn| { Box::pin(async move {
-        let contact_result = get_contact_by_phone_number(
-            req_body.phone_number.clone(), conn).await;
-
-        let contact_id = match contact_result {
-            Ok(mut contact) => {
-                let id = contact.id;
-                if req_body.email.clone() != None {
-                    contact.email = req_body.email.clone();
-                    update_contact_email(contact, conn).await?;
-                }
-                id
-            },
-            Err(_) => {
-                let contact = InsertContact {
-                    phone_number: req_body.phone_number.clone(),
-                    email: req_body.email.clone(),
-                };
-                insert_contact_returning_id(contact, conn).await?
-            }
+        let insert_contact = InsertContact {
+            phone_number: req_body.phone_number.clone(),
+            email: req_body.email.clone(),
         };
+        let contact_id = get_contact_id_by_pn_create_if_absent(insert_contact, conn)
+            .await?;
 
         let mut service_id = req_body.service_id;
         service_id.decode(keys.services);

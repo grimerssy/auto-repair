@@ -5,19 +5,32 @@ use diesel::result::Error;
 use super::Connection;
 use crate::models::{contact::{Contact, InsertContact}, id::Id};
 
-pub async fn get_contact_id_by_phone_number(phone: String, conn: &mut Connection)
+pub async fn get_contact_id_by_pn_create_if_absent(contact: InsertContact, conn: &mut Connection)
 -> Result<Id, Error>
 {
-    use crate::schema::contacts::dsl::*;
+        let contact_result = get_contact_by_phone_number(
+            contact.phone_number.clone(), conn).await;
 
-    contacts
-        .select(id)
-        .filter(phone_number.eq(phone))
-        .first::<Id>(conn)
-        .await
+        match contact_result {
+            Ok(mut db_contact) => {
+                let id = db_contact.id;
+                if contact.email.clone() != None {
+                    db_contact.email = contact.email.clone();
+                    update_contact_email(db_contact, conn).await?;
+                }
+                Ok(id)
+            },
+            Err(_) => {
+                let insert_contact = InsertContact {
+                    phone_number: contact.phone_number.clone(),
+                    email: contact.email.clone(),
+                };
+                insert_contact_returning_id(insert_contact, conn).await
+            }
+        }
 }
 
-pub async fn get_contact_by_phone_number(phone: String, conn: &mut Connection)
+async fn get_contact_by_phone_number(phone: String, conn: &mut Connection)
 -> Result<Contact, Error>
 {
     use crate::schema::contacts::dsl::*;
@@ -28,7 +41,7 @@ pub async fn get_contact_by_phone_number(phone: String, conn: &mut Connection)
         .await
 }
 
-pub async fn insert_contact_returning_id(contact: InsertContact, conn: &mut Connection)
+async fn insert_contact_returning_id(contact: InsertContact, conn: &mut Connection)
 -> Result<Id, Error>
 {
     use crate::schema::contacts::dsl::*;
@@ -44,7 +57,7 @@ pub async fn insert_contact_returning_id(contact: InsertContact, conn: &mut Conn
     Ok(contact.id)
 }
 
-pub async fn update_contact_email(contact: Contact, conn: &mut Connection)
+async fn update_contact_email(contact: Contact, conn: &mut Connection)
 -> Result<(), Error>
 {
     use crate::schema::contacts::dsl::*;

@@ -12,12 +12,23 @@ use std::env;
 use routing::configuration;
 use actix_web::{HttpServer, App, web::Data};
 
+#[derive(Clone, Copy)]
+pub struct BcryptCfg {
+    cost: u32,
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
 
     let client_host = env::var("CLIENT_HOST").unwrap();
     let database_url = env::var("DATABASE_URL").unwrap();
+    let bcrypt_cfg = BcryptCfg{
+        cost: env::var("BCRYPT_COST")
+            .unwrap_or(bcrypt::DEFAULT_COST.to_string())
+            .parse::<u32>()
+            .unwrap()
+    };
     let keys = Keys{
         contacts: Key::new(
             env::var("CONTACTS_PRIME").unwrap().parse::<i32>().unwrap(),
@@ -44,6 +55,7 @@ async fn main() -> std::io::Result<()> {
                     .allow_any_header()
             )
             .app_data(Data::new(keys))
+            .app_data(Data::new(bcrypt_cfg))
             .data_factory(move || get_connection_pool(database_url.clone()))
             .configure(configuration)
     })
