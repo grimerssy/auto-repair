@@ -5,6 +5,28 @@ use diesel::result::Error;
 use super::Connection;
 use crate::models::{contact::{Contact, InsertContact}, id::Id};
 
+pub async fn get_contact_id_by_phone_number(phone_number: String, conn: &mut Connection)
+-> Result<Id, Error> {
+    use crate::schema::contacts;
+
+    contacts::table
+        .select(contacts::id)
+        .filter(contacts::phone_number.eq(phone_number))
+        .first::<Id>(conn)
+        .await
+}
+
+pub async fn get_contact_id_by_email(email: String, conn: &mut Connection)
+-> Result<Id, Error> {
+    use crate::schema::contacts;
+
+    contacts::table
+        .select(contacts::id)
+        .filter(contacts::email.eq(email))
+        .first::<Id>(conn)
+        .await
+}
+
 pub async fn get_contact_id_by_pn_create_if_absent(contact: InsertContact, conn: &mut Connection)
 -> Result<Id, Error>
 {

@@ -15,6 +15,10 @@ pub fn configuration(cfg: &mut web::ServiceConfig) {
                     .service(services::get_all)
                     .service(services::get_by_id),
             )
-            .service(web::scope("/auth").service(users::signup)),
+            .service(
+                web::scope("/auth")
+                    .service(users::signup)
+                    .service(users::login),
+            ),
     );
 }

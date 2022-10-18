@@ -17,6 +17,12 @@ pub struct BcryptCfg {
     cost: u32,
 }
 
+#[derive(Clone)]
+pub struct JwtCfg {
+    access_sec_ttl: i64,
+    secret: String,
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
@@ -27,6 +33,14 @@ async fn main() -> std::io::Result<()> {
         cost: env::var("BCRYPT_COST")
             .unwrap_or(bcrypt::DEFAULT_COST.to_string())
             .parse::<u32>()
+            .unwrap()
+    };
+    let jwt_cfg = JwtCfg {
+        access_sec_ttl: env::var("ACCESS_SECONDS_TTL")
+            .unwrap()
+            .parse::<i64>()
+            .unwrap(),
+        secret: env::var("JWT_SECRET")
             .unwrap()
     };
     let keys = Keys{
@@ -42,6 +56,10 @@ async fn main() -> std::io::Result<()> {
             env::var("SERVICES_PRIME").unwrap().parse::<i32>().unwrap(),
             env::var("SERVICES_RANDOM").unwrap().parse::<i32>().unwrap()
         ),
+        users: Key::new(
+            env::var("USERS_PRIME").unwrap().parse::<i32>().unwrap(),
+            env::var("USERS_RANDOM").unwrap().parse::<i32>().unwrap()
+        ),
     };
 
     HttpServer::new(move || {
@@ -55,6 +73,7 @@ async fn main() -> std::io::Result<()> {
                     .allow_any_header()
             )
             .app_data(Data::new(keys))
+            .app_data(Data::new(jwt_cfg.clone()))
             .app_data(Data::new(bcrypt_cfg))
             .data_factory(move || get_connection_pool(database_url.clone()))
             .configure(configuration)
