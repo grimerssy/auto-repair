@@ -14,6 +14,7 @@ use serde::Serialize;
 pub enum ServerError {
     BadRequest(String),
     NotFound,
+    InvalidPassword,
     Internal(String),
 }
 
@@ -22,6 +23,7 @@ impl Display for ServerError {
         match self {
             Self::BadRequest(msg) => write!(f, "Bad request: {}", msg),
             Self::NotFound => write!(f, "Requested resource was not found"),
+            Self::InvalidPassword => write!(f, "Invalid password"),
             Self::Internal(_) => write!(f, "An unexpected error occurred"),
         }
     }
@@ -50,6 +52,7 @@ impl error::ResponseError for ServerError {
         match *self {
             Self::BadRequest(_) => StatusCode::BAD_REQUEST,
             Self::NotFound => StatusCode::NOT_FOUND,
+            Self::InvalidPassword => StatusCode::UNAUTHORIZED,
             Self::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
