@@ -31,7 +31,7 @@ async fn main() -> std::io::Result<()> {
     let database_url = env::var("DATABASE_URL").unwrap();
     let bcrypt_cfg = BcryptCfg{
         cost: env::var("BCRYPT_COST")
-            .unwrap_or(bcrypt::DEFAULT_COST.to_string())
+            .unwrap_or_else(|_| bcrypt::DEFAULT_COST.to_string())
             .parse::<u32>()
             .unwrap()
     };
@@ -77,8 +77,8 @@ async fn main() -> std::io::Result<()> {
             .app_data(Data::new(bcrypt_cfg))
             .data_factory(move || get_connection_pool(database_url.clone()))
             .configure(configuration)
-    })
-    .bind(("127.0.0.1", 8080))?
-    .run()
-    .await
+        })
+        .bind(("127.0.0.1", 8080))?
+        .run()
+        .await
 }

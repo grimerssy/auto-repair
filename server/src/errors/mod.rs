@@ -11,14 +11,14 @@ use actix_web::{
 use serde::Serialize;
 
 #[derive(Debug)]
-pub enum ServerError {
+pub enum Error {
     BadRequest(String),
     NotFound,
     InvalidPassword,
     Internal(String),
 }
 
-impl Display for ServerError {
+impl Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::BadRequest(msg) => write!(f, "Bad request: {}", msg),
@@ -35,7 +35,7 @@ struct ErrorResponse {
     message: String,
 }
 
-impl error::ResponseError for ServerError {
+impl error::ResponseError for Error {
     fn error_response(&self) -> HttpResponse {
         let code = self.status_code();
         let message = self.to_string();

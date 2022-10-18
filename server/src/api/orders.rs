@@ -1,18 +1,25 @@
-use actix_web::{post, HttpResponse, get};
-use actix_web::web::{Json, Data, Path};
-use diesel::result::Error;
+use super::{Result, retrieve_connection};
+use crate::{
+    data::{
+        DbPool,
+        orders::{insert_order, get_all_orders, get_orders_by_service_id},
+        contacts::get_contact_id_by_pn_create_if_absent,
+    },
+    errors::map::from_diesel_error,
+    models::{
+        id::{ Id, keys::Keys},
+        order::{InsertOrder, Order},
+        contact::InsertContact,
+    },
+};
+use actix_web::{
+    post,
+    HttpResponse,
+    get,
+    web::{Json, Data, Path},
+};
+use diesel::result::Error as DieselError;
 use serde::Deserialize;
-
-use crate::data::orders::{insert_order, get_all_orders, get_orders_by_service_id};
-use crate::errors::map::from_diesel_error;
-use crate::models::id::Id;
-use crate::models::id::keys::Keys;
-use crate::models::order::{InsertOrder, Order};
-use crate::models::contact::InsertContact;
-use crate::data::contacts::get_contact_id_by_pn_create_if_absent;
-use crate::{data::DbPool, errors::ServerError};
-
-use super::retrieve_connection;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -30,12 +37,11 @@ pub struct MakeOrderRequest {
 pub async fn make_order(
     req_body: Json<MakeOrderRequest>,
     db_pool: Data<DbPool>,
-    keys: Data<Keys>)
--> Result<HttpResponse, ServerError>
-{
+    keys: Data<Keys>,
+) -> Result<HttpResponse> {
     let conn = &mut retrieve_connection(db_pool).await?;
 
-    conn.build_transaction().run::<(), Error, _>(|conn| { Box::pin(async move {
+    conn.build_transaction().run::<(), DieselError, _>(|conn| { Box::pin(async move {
         let insert_contact = InsertContact {
             phone_number: req_body.phone_number.clone(),
             email: req_body.email.clone(),
@@ -63,9 +69,8 @@ pub async fn make_order(
 #[get("")]
 pub async fn get_all(
     db_pool: Data<DbPool>,
-    keys: Data<Keys>)
--> Result<Json<Vec<Order>>, ServerError>
-{
+    keys: Data<Keys>,
+) -> Result<Json<Vec<Order>>> {
     let conn = &mut retrieve_connection(db_pool).await?;
 
     let mut orders = get_all_orders(conn)
@@ -84,9 +89,8 @@ pub async fn get_all(
 pub async fn get_by_service_id(
     path: Path<Id>,
     db_pool: Data<DbPool>,
-    keys: Data<Keys>)
--> Result<Json<Vec<Order>>, ServerError>
-{
+    keys: Data<Keys>,
+) -> Result<Json<Vec<Order>>> {
     let mut service_id = path.into_inner();
     service_id.decode(keys.services);
 

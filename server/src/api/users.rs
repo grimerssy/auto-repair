@@ -1,20 +1,23 @@
-use super::retrieve_connection;
+use super::{Result, retrieve_connection};
+use crate::{
+    BcryptCfg, JwtCfg,
+    data::{
+        DbPool,
+        contacts::{
+            get_contact_id_by_pn_create_if_absent,
+            get_contact_id_by_phone_number,
+            get_contact_id_by_email
+        },
+        users::{insert_user, get_by_contact_id}
+    },
+    models::{user::InsertUser, contact::InsertContact, id::{Id, keys::Keys}},
+    errors::{Error, map::{to_internal_error, from_diesel_error}}
+};
 use actix_web::{post, HttpResponse, web::{Data, Json}};
 use chrono::{DateTime, offset::Utc};
 use serde::{Deserialize, Serialize};
 use bcrypt::{hash, verify};
 use jsonwebtoken::{self, Header, EncodingKey};
-
-use crate::{
-    data::{
-        DbPool,
-        contacts::{get_contact_id_by_pn_create_if_absent, get_contact_id_by_phone_number, get_contact_id_by_email},
-        users::{insert_user, get_by_contact_id}
-    },
-    models::{user::InsertUser, contact::InsertContact, id::{Id, keys::Keys}},
-    errors::{ServerError, map::{to_internal_error, from_diesel_error}},
-    BcryptCfg, JwtCfg
-};
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -35,7 +38,7 @@ pub async fn signup(
     req_body: Json<SignupRequest>,
     db_pool: Data<DbPool>,
     bcrypt_cfg: Data<BcryptCfg>,
-) -> Result<HttpResponse, ServerError> {
+) -> Result<HttpResponse> {
     let conn = &mut retrieve_connection(db_pool).await?;
     let insert_contact = InsertContact {
         phone_number: req_body.phone_number.clone(),
@@ -90,7 +93,7 @@ pub async fn login(
     db_pool: Data<DbPool>,
     jwt_cfg: Data<JwtCfg>,
     keys: Data<Keys>,
-) -> Result<Json<Tokens>, ServerError> {
+) -> Result<Json<Tokens>> {
     let conn = &mut retrieve_connection(db_pool).await?;
     let contact_id = if let Some(phone_number) = req_body.phone_number.clone() {
         get_contact_id_by_phone_number(phone_number, conn)
@@ -101,7 +104,7 @@ pub async fn login(
         .await
         .map_err(from_diesel_error())
     } else {
-        Err(ServerError::BadRequest("must provide either phone number or email".into()))
+        Err(Error::BadRequest("must provide either phone number or email".into()))
     }?;
     let user = get_by_contact_id(contact_id, conn)
         .await
@@ -109,7 +112,7 @@ pub async fn login(
     let is_password_valid = verify(req_body.password.clone(), user.password_hash.as_ref())
         .map_err(to_internal_error())?;
     if !is_password_valid {
-        return Err(ServerError::InvalidPassword)
+        return Err(Error::InvalidPassword)
     }
     let exp = chrono::Utc::now()
         .checked_add_signed(chrono::Duration::seconds(jwt_cfg.access_sec_ttl))

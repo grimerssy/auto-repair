@@ -1,12 +1,12 @@
+use super::{Result, Connection, date, timestamp, DATE_FORMAT};
+use crate::{
+    data::TIMESTAMP_FORMAT,
+    models::{user::{InsertUser, RawUser}, id::Id}
+};
 use diesel::{prelude::*, insert_into};
 use diesel_async::RunQueryDsl;
-use diesel::result::Error;
 
-use crate::{models::{user::{InsertUser, RawUser}, id::Id}, data::TIMESTAMP_FORMAT};
-
-use super::{Connection, date, timestamp, DATE_FORMAT};
-
-pub async fn insert_user(user: InsertUser, conn: &mut Connection) -> Result<(), Error> {
+pub async fn insert_user(user: InsertUser, conn: &mut Connection) -> Result<()> {
     use crate::schema::users::dsl::*;
 
     insert_into(users)
@@ -25,8 +25,7 @@ pub async fn insert_user(user: InsertUser, conn: &mut Connection) -> Result<(), 
         .map(|_| ())
 }
 
-pub async fn get_by_contact_id(contact_id: Id, conn: &mut Connection)
--> Result<RawUser, Error> {
+pub async fn get_by_contact_id(contact_id: Id, conn: &mut Connection) -> Result<RawUser> {
     use crate::schema::users;
 
     users::table
@@ -44,5 +43,5 @@ pub async fn get_by_contact_id(contact_id: Id, conn: &mut Connection)
         ))
         .filter(users::contact_id.eq(contact_id))
         .first::<RawUser>(conn)
-.await
+        .await
 }

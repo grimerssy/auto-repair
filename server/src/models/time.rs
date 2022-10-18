@@ -1,14 +1,14 @@
+use crate::errors::Error;
 use core::fmt;
+use diesel::{
+    deserialize::{self, FromSql, FromSqlRow},
+    expression::AsExpression,
+    pg::{Pg, PgValue},
+    serialize::{self, Output, ToSql},
+    sql_types,
+};
+use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize, Serializer};
 use std::str::FromStr;
-
-use diesel::deserialize::{self, FromSql, FromSqlRow};
-use diesel::expression::AsExpression;
-use diesel::pg::{Pg, PgValue};
-use diesel::serialize::{self, Output, ToSql};
-use diesel::sql_types;
-use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
-
-use crate::errors::ServerError;
 
 static MINUTE: i64 = 60_000_000;
 static HOUR: i64 = 60 * MINUTE;
@@ -27,20 +27,20 @@ impl fmt::Display for Time {
 }
 
 impl FromStr for Time {
-    type Err = ServerError;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let err_msg = "invalid time format".to_string();
         let split = s.split(':').collect::<Vec<&str>>();
         if split.len() != 2 {
-            return Err(ServerError::BadRequest(err_msg));
+            return Err(Error::BadRequest(err_msg));
         }
         let hours = split[0]
             .parse::<i64>()
-            .map_err(|_| ServerError::BadRequest(err_msg.clone()))?;
+            .map_err(|_| Error::BadRequest(err_msg.clone()))?;
         let minutes = split[1]
             .parse::<i64>()
-            .map_err(|_| ServerError::BadRequest(err_msg.clone()))?;
+            .map_err(|_| Error::BadRequest(err_msg.clone()))?;
         Ok(Time(hours * HOUR + minutes * MINUTE))
     }
 }

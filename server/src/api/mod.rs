@@ -2,22 +2,15 @@ pub mod orders;
 pub mod services;
 pub mod users;
 
+use crate::{
+    data::{DbPool, PooledConnection},
+    errors::{Error, map::to_internal_error},
+};
 use actix_web::web::Data;
-use diesel::result::Error;
 
-use crate::data::{DbPool, PooledConnection};
-use crate::errors::{ServerError, map::to_internal_error};
+type Result<T> = std::result::Result<T, Error>;
 
-async fn retrieve_connection(pool: Data<DbPool>) -> Result<PooledConnection, ServerError> {
+async fn retrieve_connection(pool: Data<DbPool>) -> Result<PooledConnection> {
     pool.get().await
         .map_err(to_internal_error())
-}
-
-fn to_server_error() -> impl Fn(Error) -> ServerError {
-    |e| {
-        match e {
-            Error::NotFound => ServerError::NotFound,
-            _ => ServerError::Internal(format!("{}", e))
-        }
-    }
 }

@@ -1,9 +1,9 @@
-use diesel_async::RunQueryDsl;
-use diesel::{prelude::*, insert_into, result::Error};
-use super::{Connection, TIMESTAMP_FORMAT, timestamp::{to_char, to_timestamp}};
+use super::{Result, Connection, TIMESTAMP_FORMAT, timestamp::{to_char, to_timestamp}};
 use crate::models::{order::{InsertOrder, Order}, id::Id};
+use diesel_async::RunQueryDsl;
+use diesel::{prelude::*, insert_into};
 
-pub async fn insert_order(order: InsertOrder, conn: &mut Connection) -> Result<(), Error> {
+pub async fn insert_order(order: InsertOrder, conn: &mut Connection) -> Result<()> {
     use crate::schema::orders::dsl::*;
 
     insert_into(orders)
@@ -20,9 +20,7 @@ pub async fn insert_order(order: InsertOrder, conn: &mut Connection) -> Result<(
         .map(|_| ())
 }
 
-pub async fn get_all_orders(conn: &mut Connection)
--> Result<Vec<Order>, Error>
-{
+pub async fn get_all_orders(conn: &mut Connection) -> Result<Vec<Order>> {
     use crate::schema::*;
 
     orders::table
@@ -40,9 +38,8 @@ pub async fn get_all_orders(conn: &mut Connection)
             .await
 }
 
-pub async fn get_orders_by_service_id(service_id: Id, conn: &mut Connection)
--> Result<Vec<Order>, Error>
-{
+pub async fn get_orders_by_service_id(service_id: Id, conn: &mut Connection,
+) -> Result<Vec<Order>> {
     use crate::schema::*;
 
     orders::table
@@ -61,9 +58,8 @@ pub async fn get_orders_by_service_id(service_id: Id, conn: &mut Connection)
             .await
 }
 
-pub async fn get_orders_by_contact_id(contact_id: Id, conn: &mut Connection)
--> Result<Vec<Order>, Error>
-{
+pub async fn get_orders_by_contact_id(contact_id: Id, conn: &mut Connection,
+) -> Result<Vec<Order>> {
     use crate::schema::*;
 
     orders::table
