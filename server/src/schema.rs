@@ -34,9 +34,11 @@ diesel::table! {
         id -> Int4,
         contact_id -> Int4,
         password_hash -> Varchar,
+        role -> Varchar,
         first_name -> Varchar,
         middle_name -> Nullable<Varchar>,
         last_name -> Varchar,
+        sex -> Varchar,
         date_of_birth -> Date,
         registered_at -> Timestamp,
     }
