@@ -10,7 +10,7 @@ use data::get_connection_pool;
 use models::id::keys::{Keys, Key};
 use std::env;
 use routing::configuration;
-use actix_web::{HttpServer, App, web::Data};
+use actix_web::{HttpServer, App, web::Data, middleware};
 
 #[derive(Clone, Copy)]
 pub struct BcryptCfg {
@@ -26,6 +26,7 @@ pub struct JwtCfg {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
+    env_logger::init();
 
     let client_host = env::var("CLIENT_HOST").unwrap();
     let database_url = env::var("DATABASE_URL").unwrap();
@@ -72,6 +73,7 @@ async fn main() -> std::io::Result<()> {
                     .allowed_methods(vec!["GET", "POST"])
                     .allow_any_header()
             )
+            .wrap(middleware::Logger::default())
             .app_data(Data::new(keys))
             .app_data(Data::new(jwt_cfg.clone()))
             .app_data(Data::new(bcrypt_cfg))
