@@ -11,3 +11,9 @@ pub struct Service {
     pub price: Money,
     pub duration: Time,
 }
+
+pub struct InsertService {
+    pub title: String,
+    pub price: Money,
+    pub duration: Time,
+}

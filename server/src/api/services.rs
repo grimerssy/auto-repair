@@ -1,12 +1,40 @@
 use super::{Result, retrieve_connection, check_if_admin, get_claims};
 use crate::{
     data::DbPool,
-    models::{service::Service, id::{keys::Keys, Id}, money::Money, time::Time},
+    models::{service::{Service, InsertService}, id::{keys::Keys, Id}, money::Money, time::Time},
     data::services,
     errors::map::from_diesel_error, JwtCfg,
 };
-use actix_web::{web::{Data, Json, Path}, get, put, HttpRequest, HttpResponse, delete};
+use actix_web::{web::{Data, Json, Path}, get, put, HttpRequest, HttpResponse, delete, post};
 use serde::Deserialize;
+
+#[derive(Deserialize)]
+#[serde(rename_all="camelCase")]
+pub struct CreateRequest {
+    title: String,
+    price: Money,
+    duration: Time,
+}
+
+#[post("")]
+pub async fn create(
+    req: HttpRequest,
+    req_body: Json<CreateRequest>,
+    db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
+) -> Result<HttpResponse> {
+    check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
+    let conn = &mut retrieve_connection(db_pool).await?;
+    let service = InsertService {
+        title: req_body.title.clone(),
+        price: req_body.price,
+        duration: req_body.duration,
+    };
+    services::insert(service, conn)
+        .await
+        .map(|_| HttpResponse::Created().finish())
+        .map_err(from_diesel_error())
+}
 
 #[get("")]
 pub async fn get_all(db_pool: Data<DbPool>, keys: Data<Keys>,

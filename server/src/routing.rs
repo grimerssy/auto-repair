@@ -12,6 +12,7 @@ pub fn configuration(cfg: &mut web::ServiceConfig) {
             )
             .service(
                 web::scope("/services")
+                    .service(services::create)
                     .service(services::get_all)
                     .service(services::get_by_id)
                     .service(services::delete_by_id)
