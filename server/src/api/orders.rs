@@ -19,7 +19,7 @@ use serde::Deserialize;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct MakeOrderRequest {
+pub struct CreateRequest {
     phone_number: String,
     email: Option<String>,
     service_id: Id,
@@ -30,8 +30,8 @@ pub struct MakeOrderRequest {
 }
 
 #[post("")]
-pub async fn make(
-    req_body: Json<MakeOrderRequest>,
+pub async fn create(
+    req_body: Json<CreateRequest>,
     db_pool: Data<DbPool>,
     keys: Data<Keys>,
 ) -> Result<HttpResponse> {

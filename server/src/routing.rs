@@ -6,7 +6,7 @@ pub fn configuration(cfg: &mut web::ServiceConfig) {
         web::scope("/api")
             .service(
                 web::scope("/orders")
-                    .service(orders::make)
+                    .service(orders::create)
                     .service(orders::get_all)
                     .service(orders::get_by_service_id),
             )
