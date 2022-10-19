@@ -45,7 +45,7 @@ async fn get_claims<'a>(req: &'a HttpRequest, secret: &'a str) -> Result<Claims>
 }
 
 fn check_if_admin(claims: Claims) -> Result<()> {
-     if claims.role == "admin" {
+    if claims.role != "admin" {
         return Err(Error::AccessDenied)
     }
     Ok(())
