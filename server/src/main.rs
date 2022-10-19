@@ -79,8 +79,8 @@ async fn main() -> std::io::Result<()> {
             .app_data(Data::new(bcrypt_cfg))
             .data_factory(move || get_connection_pool(database_url.clone()))
             .configure(configuration)
-        })
+    })
         .bind(("127.0.0.1", 8080))?
         .run()
-        .await
+    .await
 }

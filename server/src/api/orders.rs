@@ -1,4 +1,4 @@
-use super::{Result, retrieve_connection};
+use super::{Result, retrieve_connection, get_claims, check_if_admin};
 use crate::{
     data::{
         DbPool,
@@ -10,13 +10,13 @@ use crate::{
         id::{ Id, keys::Keys},
         order::{InsertOrder, Order},
         contact::InsertContact,
-    },
+    }, JwtCfg,
 };
 use actix_web::{
     post,
     HttpResponse,
     get,
-    web::{Json, Data, Path},
+    web::{Json, Data, Path}, HttpRequest,
 };
 use diesel::result::Error as DieselError;
 use serde::Deserialize;
@@ -68,11 +68,13 @@ pub async fn make_order(
 
 #[get("")]
 pub async fn get_all(
+    req: HttpRequest,
     db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
     keys: Data<Keys>,
 ) -> Result<Json<Vec<Order>>> {
+    check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
     let conn = &mut retrieve_connection(db_pool).await?;
-
     let mut orders = get_all_orders(conn)
         .await
         .map_err(from_diesel_error())?;
@@ -87,15 +89,16 @@ pub async fn get_all(
 
 #[get("/{id}")]
 pub async fn get_by_service_id(
+    req: HttpRequest,
     path: Path<Id>,
     db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
     keys: Data<Keys>,
 ) -> Result<Json<Vec<Order>>> {
+    check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
     let mut service_id = path.into_inner();
     service_id.decode(keys.services);
-
     let conn = &mut retrieve_connection(db_pool).await?;
-
     let mut orders = get_orders_by_service_id(service_id, conn)
         .await
         .map_err(from_diesel_error())?;

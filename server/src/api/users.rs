@@ -1,4 +1,4 @@
-use super::{Result, retrieve_connection};
+use super::{Result, Claims, retrieve_connection};
 use crate::{
     BcryptCfg, JwtCfg,
     data::{
@@ -10,11 +10,10 @@ use crate::{
         },
         users::{insert_user, get_by_contact_id}
     },
-    models::{user::InsertUser, contact::InsertContact, id::{Id, keys::Keys}},
+    models::{user::InsertUser, contact::InsertContact, id::keys::Keys},
     errors::{Error, map::{to_internal_error, from_diesel_error}}
 };
 use actix_web::{post, HttpResponse, web::{Data, Json}};
-use chrono::{DateTime, offset::Utc};
 use serde::{Deserialize, Serialize};
 use bcrypt::{hash, verify};
 use jsonwebtoken::{self, Header, EncodingKey};
@@ -79,14 +78,6 @@ pub struct Tokens {
     access: String,
 }
 
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Claims {
-    sub: Id,
-    role: String,
-    exp: DateTime<Utc>,
-}
-
 #[post("/login")]
 pub async fn login(
     req_body: Json<LoginRequest>,
@@ -116,7 +107,8 @@ pub async fn login(
     }
     let exp = chrono::Utc::now()
         .checked_add_signed(chrono::Duration::seconds(jwt_cfg.access_sec_ttl))
-        .unwrap_or_default();
+        .unwrap_or_default()
+        .timestamp_nanos();
     let mut user_id = user.id;
     user_id.encode(keys.users);
     let claims = Claims {
