@@ -5,7 +5,7 @@ use crate::{
     data::services,
     errors::map::from_diesel_error, JwtCfg,
 };
-use actix_web::{web::{Data, Json, Path}, get, put, HttpRequest, HttpResponse};
+use actix_web::{web::{Data, Json, Path}, get, put, HttpRequest, HttpResponse, delete};
 use serde::Deserialize;
 
 #[get("")]
@@ -56,6 +56,24 @@ pub async fn update_by_id(
         duration: req_body.duration,
     };
     services::update_by_id(service, conn)
+        .await
+        .map(|_| HttpResponse::Ok().finish())
+        .map_err(from_diesel_error())
+}
+
+#[delete("/{id}")]
+pub async fn delete_by_id(
+    req: HttpRequest,
+    path: Path<Id>,
+    db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
+    keys: Data<Keys>,
+) -> Result<HttpResponse> {
+    check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
+    let mut id = path.into_inner();
+    id.decode(keys.services);
+    let conn = &mut retrieve_connection(db_pool).await?;
+    services::delete_by_id(id, conn)
         .await
         .map(|_| HttpResponse::Ok().finish())
         .map_err(from_diesel_error())

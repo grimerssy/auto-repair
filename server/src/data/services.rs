@@ -1,6 +1,6 @@
 use super::{Result, Connection};
 use crate::models::{id::Id, service::Service};
-use diesel::{prelude::*, update};
+use diesel::{prelude::*, update, delete};
 use diesel_async::RunQueryDsl;
 
 pub async fn get_all(conn: &mut Connection) -> Result<Vec<Service>> {
@@ -12,8 +12,7 @@ pub async fn get_by_id(service_id: Id, conn: &mut Connection) -> Result<Service>
     services.filter(id.eq(service_id)).first::<Service>(conn).await
 }
 
-pub async fn update_by_id(service: Service, conn: &mut Connection,
-) -> Result<()> {
+pub async fn update_by_id(service: Service, conn: &mut Connection) -> Result<()> {
     use crate::schema::services::dsl::*;
 
     update(services.filter(id.eq(service.id)))
@@ -25,4 +24,11 @@ pub async fn update_by_id(service: Service, conn: &mut Connection,
         .execute(conn)
         .await
         .map(|_| ())
+}
+
+pub async fn delete_by_id(service_id: Id, conn: &mut Connection) -> Result<()> {
+    use crate::schema::services::dsl::*;
+    let res = delete(services.filter(id.eq(service_id))).execute(conn).await.map(|_| ());
+    println!("result: {:?}", res);
+    res
 }
