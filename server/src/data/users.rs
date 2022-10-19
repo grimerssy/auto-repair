@@ -6,7 +6,7 @@ use crate::{
 use diesel::{prelude::*, insert_into};
 use diesel_async::RunQueryDsl;
 
-pub async fn insert_user(user: InsertUser, conn: &mut Connection) -> Result<()> {
+pub async fn insert(user: InsertUser, conn: &mut Connection) -> Result<()> {
     use crate::schema::users::dsl::*;
 
     insert_into(users)

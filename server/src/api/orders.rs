@@ -1,10 +1,6 @@
 use super::{Result, retrieve_connection, get_claims, check_if_admin};
 use crate::{
-    data::{
-        DbPool,
-        orders::{insert_order, get_all_orders, get_orders_by_service_id},
-        contacts::get_contact_id_by_pn_create_if_absent,
-    },
+    data::{DbPool, orders, contacts},
     errors::map::from_diesel_error,
     models::{
         id::{ Id, keys::Keys},
@@ -34,7 +30,7 @@ pub struct MakeOrderRequest {
 }
 
 #[post("")]
-pub async fn make_order(
+pub async fn make(
     req_body: Json<MakeOrderRequest>,
     db_pool: Data<DbPool>,
     keys: Data<Keys>,
@@ -46,8 +42,10 @@ pub async fn make_order(
             phone_number: req_body.phone_number.clone(),
             email: req_body.email.clone(),
         };
-        let contact_id = get_contact_id_by_pn_create_if_absent(insert_contact, conn)
-            .await?;
+        let contact_id = contacts::get_id_by_phone_number_create_if_absent(
+            insert_contact,
+            conn,
+            ).await?;
 
         let mut service_id = req_body.service_id;
         service_id.decode(keys.services);
@@ -60,7 +58,7 @@ pub async fn make_order(
             car_model: req_body.car_model.clone(),
             car_year: req_body.car_year,
         };
-        insert_order(order, conn).await
+        orders::insert(order, conn).await
     })}).await
         .map(|_| HttpResponse::Created().finish())
         .map_err(from_diesel_error())
@@ -75,7 +73,7 @@ pub async fn get_all(
 ) -> Result<Json<Vec<Order>>> {
     check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
     let conn = &mut retrieve_connection(db_pool).await?;
-    let mut orders = get_all_orders(conn)
+    let mut orders = orders::get_all(conn)
         .await
         .map_err(from_diesel_error())?;
     orders.iter_mut().for_each(|o| {
@@ -99,7 +97,7 @@ pub async fn get_by_service_id(
     let mut service_id = path.into_inner();
     service_id.decode(keys.services);
     let conn = &mut retrieve_connection(db_pool).await?;
-    let mut orders = get_orders_by_service_id(service_id, conn)
+    let mut orders = orders::get_by_service_id(service_id, conn)
         .await
         .map_err(from_diesel_error())?;
     orders.iter_mut().for_each(|o| {

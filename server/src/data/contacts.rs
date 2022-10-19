@@ -3,7 +3,7 @@ use crate::models::{contact::{Contact, InsertContact}, id::Id};
 use diesel::{prelude::*, insert_into, update};
 use diesel_async::RunQueryDsl;
 
-pub async fn get_contact_id_by_phone_number(phone_number: String, conn: &mut Connection,
+pub async fn get_id_by_phone_number(phone_number: String, conn: &mut Connection,
 ) -> Result<Id> {
     use crate::schema::contacts;
 
@@ -14,7 +14,7 @@ pub async fn get_contact_id_by_phone_number(phone_number: String, conn: &mut Con
         .await
 }
 
-pub async fn get_contact_id_by_email(email: String, conn: &mut Connection,
+pub async fn get_id_by_email(email: String, conn: &mut Connection,
 ) -> Result<Id> {
     use crate::schema::contacts;
 
@@ -25,9 +25,11 @@ pub async fn get_contact_id_by_email(email: String, conn: &mut Connection,
         .await
 }
 
-pub async fn get_contact_id_by_pn_create_if_absent(contact: InsertContact, conn: &mut Connection,
+pub async fn get_id_by_phone_number_create_if_absent(
+    contact: InsertContact,
+    conn: &mut Connection,
 ) -> Result<Id> {
-        let contact_result = get_contact_by_phone_number(
+        let contact_result = get_by_phone_number(
             contact.phone_number.clone(), conn).await;
 
         match contact_result {
@@ -35,7 +37,7 @@ pub async fn get_contact_id_by_pn_create_if_absent(contact: InsertContact, conn:
                 let id = db_contact.id;
                 if contact.email.clone() != None {
                     db_contact.email = contact.email.clone();
-                    update_contact_email(db_contact, conn).await?;
+                    update_email(db_contact, conn).await?;
                 }
                 Ok(id)
             },
@@ -44,12 +46,12 @@ pub async fn get_contact_id_by_pn_create_if_absent(contact: InsertContact, conn:
                     phone_number: contact.phone_number.clone(),
                     email: contact.email.clone(),
                 };
-                insert_contact_returning_id(insert_contact, conn).await
+                insert_returning_id(insert_contact, conn).await
             }
         }
 }
 
-async fn get_contact_by_phone_number(phone: String, conn: &mut Connection,
+async fn get_by_phone_number(phone: String, conn: &mut Connection,
 ) -> Result<Contact> {
     use crate::schema::contacts::dsl::*;
 
@@ -59,7 +61,7 @@ async fn get_contact_by_phone_number(phone: String, conn: &mut Connection,
         .await
 }
 
-async fn insert_contact_returning_id(contact: InsertContact, conn: &mut Connection,
+async fn insert_returning_id(contact: InsertContact, conn: &mut Connection,
 ) -> Result<Id> {
     use crate::schema::contacts::dsl::*;
 
@@ -74,7 +76,7 @@ async fn insert_contact_returning_id(contact: InsertContact, conn: &mut Connecti
     Ok(contact.id)
 }
 
-async fn update_contact_email(contact: Contact, conn: &mut Connection)
+async fn update_email(contact: Contact, conn: &mut Connection)
 -> Result<()>
 {
     use crate::schema::contacts::dsl::*;

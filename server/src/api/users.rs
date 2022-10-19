@@ -4,11 +4,11 @@ use crate::{
     data::{
         DbPool,
         contacts::{
-            get_contact_id_by_pn_create_if_absent,
-            get_contact_id_by_phone_number,
-            get_contact_id_by_email
+            get_id_by_phone_number_create_if_absent,
+            get_id_by_phone_number,
+            get_id_by_email
         },
-        users::{insert_user, get_by_contact_id}
+        users::{insert, get_by_contact_id}
     },
     models::{user::InsertUser, contact::InsertContact, id::keys::Keys},
     errors::{Error, map::{to_internal_error, from_diesel_error}}
@@ -43,7 +43,7 @@ pub async fn signup(
         phone_number: req_body.phone_number.clone(),
         email: req_body.email.clone(),
     };
-    let contact_id = get_contact_id_by_pn_create_if_absent(insert_contact, conn)
+    let contact_id = get_id_by_phone_number_create_if_absent(insert_contact, conn)
         .await
         .map_err(from_diesel_error())?;
     let password_hash = hash(req_body.password.clone(), bcrypt_cfg.cost)
@@ -58,7 +58,7 @@ pub async fn signup(
         sex: req_body.sex.clone(),
         date_of_birth: req_body.date_of_birth.clone(),
     };
-    insert_user(user, conn)
+    insert(user, conn)
         .await
         .map(|_| HttpResponse::Created().finish())
         .map_err(from_diesel_error())
@@ -87,11 +87,11 @@ pub async fn login(
 ) -> Result<Json<Tokens>> {
     let conn = &mut retrieve_connection(db_pool).await?;
     let contact_id = if let Some(phone_number) = req_body.phone_number.clone() {
-        get_contact_id_by_phone_number(phone_number, conn)
+        get_id_by_phone_number(phone_number, conn)
         .await
         .map_err(from_diesel_error())
     } else if let Some(email) = req_body.email.clone() {
-        get_contact_id_by_email(email, conn)
+        get_id_by_email(email, conn)
         .await
         .map_err(from_diesel_error())
     } else {
