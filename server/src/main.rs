@@ -57,10 +57,6 @@ async fn main() -> std::io::Result<()> {
             env::var("SERVICES_PRIME").unwrap().parse::<i32>().unwrap(),
             env::var("SERVICES_RANDOM").unwrap().parse::<i32>().unwrap()
         ),
-        users: Key::new(
-            env::var("USERS_PRIME").unwrap().parse::<i32>().unwrap(),
-            env::var("USERS_RANDOM").unwrap().parse::<i32>().unwrap()
-        ),
     };
 
     HttpServer::new(move || {

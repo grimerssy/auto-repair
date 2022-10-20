@@ -6,14 +6,12 @@ use super::{contact::Contact, id::Id};
 #[derive(Queryable, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RawUser {
-    pub id: Id,
     pub contact_id: Id,
     pub password_hash: String,
     pub role: String,
     pub first_name: String,
     pub middle_name: Option<String>,
     pub last_name: String,
-    pub sex: String,
     pub date_of_birth: String,
     pub registered_at: String,
 }
@@ -21,14 +19,12 @@ pub struct RawUser {
 #[derive(Queryable, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
-    pub id: Id,
-    pub contact_id: Contact,
+    pub contact: Contact,
     pub password_hash: String,
     pub role: String,
     pub first_name: String,
     pub middle_name: Option<String>,
     pub last_name: String,
-    pub sex: String,
     pub date_of_birth: String,
     pub registered_at: String,
 }
@@ -40,6 +36,5 @@ pub struct InsertUser {
     pub first_name: String,
     pub middle_name: Option<String>,
     pub last_name: String,
-    pub sex: String,
     pub date_of_birth: String,
 }

@@ -27,7 +27,6 @@ pub struct SignupRequest {
     first_name: String,
     middle_name: Option<String>,
     last_name: String,
-    sex: String,
     date_of_birth: String,
 }
 
@@ -55,7 +54,6 @@ pub async fn signup(
         first_name: req_body.first_name.clone(),
         middle_name: req_body.middle_name.clone(),
         last_name: req_body.last_name.clone(),
-        sex: req_body.sex.clone(),
         date_of_birth: req_body.date_of_birth.clone(),
     };
     insert(user, conn)
@@ -109,10 +107,10 @@ pub async fn login(
         .checked_add_signed(chrono::Duration::seconds(jwt_cfg.access_sec_ttl))
         .unwrap_or_default()
         .timestamp_nanos();
-    let mut user_id = user.id;
-    user_id.encode(keys.users);
+    let mut contact_id = user.contact_id;
+    contact_id.encode(keys.contacts);
     let claims = Claims {
-        sub: user_id,
+        sub: contact_id,
         role: user.role,
         exp,
     };
