@@ -48,7 +48,9 @@ const BookNoAuth = ({ serviceId }: props) => {
       carModel: carModel,
       carYear: +carYear,
     }).then((res) => {
-      let msg = res.ok ? "Booked successfully" : "An error occurred. Try again";
+      const msg = res.ok
+        ? "Booked successfully"
+        : "An error occurred. Try again";
       alert(msg);
       setIsLoading(false);
       setIsDisabled(true);

@@ -1,9 +1,9 @@
 import default_image from "../assets/default.jpg";
 import { Link } from "react-router-dom";
 import { Box, Grid, Typography } from "@mui/material";
-import { Service } from "../models.js";
+import { Service as Model } from "../models.js";
 
-const Service = (service: Service) => {
+const Service = (service: Model) => {
   return (
     <Box
       sx={{
