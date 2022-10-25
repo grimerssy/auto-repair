@@ -1,11 +1,14 @@
-pub mod orders;
 pub mod contacts;
+pub mod orders;
 pub mod services;
 pub mod users;
 
 use diesel_async::{
+    pooled_connection::{
+        deadpool::{Object, Pool},
+        AsyncDieselConnectionManager,
+    },
     AsyncPgConnection,
-    pooled_connection::{AsyncDieselConnectionManager, deadpool::{Pool, Object}}
 };
 
 type Result<T> = std::result::Result<T, diesel::result::Error>;
@@ -23,7 +26,10 @@ pub async fn get_connection_pool(url: String) -> Result<DbPool> {
 }
 
 pub mod timestamp {
-    use diesel::{sql_function, sql_types::{Timestamp, Text}};
+    use diesel::{
+        sql_function,
+        sql_types::{Text, Timestamp},
+    };
 
     sql_function! {
         fn to_char(t: Timestamp, f: Text) -> Text;
@@ -35,7 +41,10 @@ pub mod timestamp {
 }
 
 pub mod date {
-    use diesel::{sql_function, sql_types::{Date, Text}};
+    use diesel::{
+        sql_function,
+        sql_types::{Date, Text},
+    };
 
     sql_function! {
         fn to_char(t: Date, f: Text) -> Text;

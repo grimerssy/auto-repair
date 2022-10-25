@@ -1,9 +1,12 @@
-use super::{Result, Connection, date, timestamp, DATE_FORMAT};
+use super::{date, timestamp, Connection, Result, DATE_FORMAT};
 use crate::{
     data::TIMESTAMP_FORMAT,
-    models::{user::{InsertUser, RawUser}, id::Id}
+    models::{
+        id::Id,
+        user::{InsertUser, RawUser},
+    },
 };
-use diesel::{prelude::*, insert_into};
+use diesel::{insert_into, prelude::*};
 use diesel_async::RunQueryDsl;
 
 pub async fn insert(user: InsertUser, conn: &mut Connection) -> Result<()> {

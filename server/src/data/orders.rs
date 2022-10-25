@@ -1,7 +1,13 @@
-use super::{Result, Connection, TIMESTAMP_FORMAT, timestamp::{to_char, to_timestamp}};
-use crate::models::{order::{InsertOrder, Order}, id::Id};
+use super::{
+    timestamp::{to_char, to_timestamp},
+    Connection, Result, TIMESTAMP_FORMAT,
+};
+use crate::models::{
+    id::Id,
+    order::{InsertOrder, Order},
+};
+use diesel::{insert_into, prelude::*};
 use diesel_async::RunQueryDsl;
-use diesel::{prelude::*, insert_into};
 
 pub async fn insert(order: InsertOrder, conn: &mut Connection) -> Result<()> {
     use crate::schema::orders::dsl::*;
@@ -29,17 +35,22 @@ pub async fn get_all(conn: &mut Connection) -> Result<Vec<Order>> {
         .select((
             orders::id,
             (contacts::id, contacts::phone_number, contacts::email),
-            (services::id, services::title, services::price, services::duration),
+            (
+                services::id,
+                services::title,
+                services::price,
+                services::duration,
+            ),
             to_char(orders::start_time, TIMESTAMP_FORMAT),
             orders::car_make,
             orders::car_model,
-            orders::car_year))
-            .load::<Order>(conn)
-            .await
+            orders::car_year,
+        ))
+        .load::<Order>(conn)
+        .await
 }
 
-pub async fn get_by_service_id(service_id: Id, conn: &mut Connection,
-) -> Result<Vec<Order>> {
+pub async fn get_by_service_id(service_id: Id, conn: &mut Connection) -> Result<Vec<Order>> {
     use crate::schema::*;
 
     orders::table
@@ -48,18 +59,23 @@ pub async fn get_by_service_id(service_id: Id, conn: &mut Connection,
         .select((
             orders::id,
             (contacts::id, contacts::phone_number, contacts::email),
-            (services::id, services::title, services::price, services::duration),
+            (
+                services::id,
+                services::title,
+                services::price,
+                services::duration,
+            ),
             to_char(orders::start_time, TIMESTAMP_FORMAT),
             orders::car_make,
             orders::car_model,
-            orders::car_year))
-            .filter(orders::service_id.eq(service_id))
-            .load::<Order>(conn)
-            .await
+            orders::car_year,
+        ))
+        .filter(orders::service_id.eq(service_id))
+        .load::<Order>(conn)
+        .await
 }
 
-pub async fn get_by_contact_id(contact_id: Id, conn: &mut Connection,
-) -> Result<Vec<Order>> {
+pub async fn get_by_contact_id(contact_id: Id, conn: &mut Connection) -> Result<Vec<Order>> {
     use crate::schema::*;
 
     orders::table
@@ -68,12 +84,18 @@ pub async fn get_by_contact_id(contact_id: Id, conn: &mut Connection,
         .select((
             orders::id,
             (contacts::id, contacts::phone_number, contacts::email),
-            (services::id, services::title, services::price, services::duration),
+            (
+                services::id,
+                services::title,
+                services::price,
+                services::duration,
+            ),
             to_char(orders::start_time, TIMESTAMP_FORMAT),
             orders::car_make,
             orders::car_model,
-            orders::car_year))
-            .filter(orders::contact_id.eq(contact_id))
-            .load::<Order>(conn)
-            .await
+            orders::car_year,
+        ))
+        .filter(orders::contact_id.eq(contact_id))
+        .load::<Order>(conn)
+        .await
 }

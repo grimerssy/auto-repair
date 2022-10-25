@@ -1,16 +1,16 @@
 mod api;
 mod data;
-mod models;
 mod errors;
-mod schema;
+mod models;
 mod routing;
+mod schema;
 
 use actix_cors::Cors;
+use actix_web::{middleware, web::Data, App, HttpServer};
 use data::get_connection_pool;
-use models::id::keys::{Keys, Key};
-use std::env;
+use models::id::keys::{Key, Keys};
 use routing::configuration;
-use actix_web::{HttpServer, App, web::Data, middleware};
+use std::env;
 
 #[derive(Clone, Copy)]
 pub struct BcryptCfg {
@@ -30,32 +30,31 @@ async fn main() -> std::io::Result<()> {
 
     let client_host = env::var("CLIENT_HOST").unwrap();
     let database_url = env::var("DATABASE_URL").unwrap();
-    let bcrypt_cfg = BcryptCfg{
+    let bcrypt_cfg = BcryptCfg {
         cost: env::var("BCRYPT_COST")
             .unwrap_or_else(|_| bcrypt::DEFAULT_COST.to_string())
             .parse::<u32>()
-            .unwrap()
+            .unwrap(),
     };
     let jwt_cfg = JwtCfg {
         access_sec_ttl: env::var("ACCESS_SECONDS_TTL")
             .unwrap()
             .parse::<i64>()
             .unwrap(),
-        secret: env::var("JWT_SECRET")
-            .unwrap()
+        secret: env::var("JWT_SECRET").unwrap(),
     };
-    let keys = Keys{
+    let keys = Keys {
         contacts: Key::new(
             env::var("CONTACTS_PRIME").unwrap().parse::<i32>().unwrap(),
-            env::var("CONTACTS_RANDOM").unwrap().parse::<i32>().unwrap()
+            env::var("CONTACTS_RANDOM").unwrap().parse::<i32>().unwrap(),
         ),
         orders: Key::new(
             env::var("ORDERS_PRIME").unwrap().parse::<i32>().unwrap(),
-            env::var("ORDERS_RANDOM").unwrap().parse::<i32>().unwrap()
+            env::var("ORDERS_RANDOM").unwrap().parse::<i32>().unwrap(),
         ),
         services: Key::new(
             env::var("SERVICES_PRIME").unwrap().parse::<i32>().unwrap(),
-            env::var("SERVICES_RANDOM").unwrap().parse::<i32>().unwrap()
+            env::var("SERVICES_RANDOM").unwrap().parse::<i32>().unwrap(),
         ),
     };
 
@@ -67,7 +66,7 @@ async fn main() -> std::io::Result<()> {
                 Cors::default()
                     .allowed_origin(&client_host.clone())
                     .allowed_methods(vec!["GET", "POST"])
-                    .allow_any_header()
+                    .allow_any_header(),
             )
             .wrap(middleware::Logger::default())
             .app_data(Data::new(keys))
@@ -76,7 +75,7 @@ async fn main() -> std::io::Result<()> {
             .data_factory(move || get_connection_pool(database_url.clone()))
             .configure(configuration)
     })
-        .bind(("127.0.0.1", 8080))?
-        .run()
+    .bind(("127.0.0.1", 8080))?
+    .run()
     .await
 }

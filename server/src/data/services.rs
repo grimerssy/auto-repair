@@ -1,6 +1,9 @@
-use super::{Result, Connection};
-use crate::models::{id::Id, service::{Service, InsertService}};
-use diesel::{prelude::*, insert_into, update, delete};
+use super::{Connection, Result};
+use crate::models::{
+    id::Id,
+    service::{InsertService, Service},
+};
+use diesel::{delete, insert_into, prelude::*, update};
 use diesel_async::RunQueryDsl;
 
 pub async fn get_all(conn: &mut Connection) -> Result<Vec<Service>> {
@@ -9,7 +12,10 @@ pub async fn get_all(conn: &mut Connection) -> Result<Vec<Service>> {
 
 pub async fn get_by_id(service_id: Id, conn: &mut Connection) -> Result<Service> {
     use crate::schema::services::dsl::*;
-    services.filter(id.eq(service_id)).first::<Service>(conn).await
+    services
+        .filter(id.eq(service_id))
+        .first::<Service>(conn)
+        .await
 }
 
 pub async fn insert(service: InsertService, conn: &mut Connection) -> Result<()> {
@@ -42,7 +48,10 @@ pub async fn update_by_id(service: Service, conn: &mut Connection) -> Result<()>
 
 pub async fn delete_by_id(service_id: Id, conn: &mut Connection) -> Result<()> {
     use crate::schema::services::dsl::*;
-    let res = delete(services.filter(id.eq(service_id))).execute(conn).await.map(|_| ());
+    let res = delete(services.filter(id.eq(service_id)))
+        .execute(conn)
+        .await
+        .map(|_| ());
     println!("result: {:?}", res);
     res
 }

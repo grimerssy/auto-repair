@@ -1,22 +1,27 @@
-use super::{Result, Claims, retrieve_connection};
+use super::{retrieve_connection, Claims, Result};
 use crate::{
-    BcryptCfg, JwtCfg,
     data::{
-        DbPool,
         contacts::{
-            get_id_by_phone_number_create_if_absent,
-            get_id_by_phone_number,
-            get_id_by_email
+            get_id_by_email, get_id_by_phone_number, get_id_by_phone_number_create_if_absent,
         },
-        users::{insert, get_by_contact_id}
+        users::{get_by_contact_id, insert},
+        DbPool,
     },
-    models::{user::InsertUser, contact::InsertContact, id::keys::Keys},
-    errors::{Error, map::{to_internal_error, from_diesel_error}}
+    errors::{
+        map::{from_diesel_error, to_internal_error},
+        Error,
+    },
+    models::{contact::InsertContact, id::keys::Keys, user::InsertUser},
+    BcryptCfg, JwtCfg,
 };
-use actix_web::{post, HttpResponse, web::{Data, Json}};
-use serde::{Deserialize, Serialize};
+use actix_web::{
+    post,
+    web::{Data, Json},
+    HttpResponse,
+};
 use bcrypt::{hash, verify};
-use jsonwebtoken::{self, Header, EncodingKey};
+use jsonwebtoken::{self, EncodingKey, Header};
+use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -29,7 +34,6 @@ pub struct SignupRequest {
     last_name: String,
     date_of_birth: String,
 }
-
 
 #[post("/signup")]
 pub async fn signup(
@@ -45,8 +49,8 @@ pub async fn signup(
     let contact_id = get_id_by_phone_number_create_if_absent(insert_contact, conn)
         .await
         .map_err(from_diesel_error())?;
-    let password_hash = hash(req_body.password.clone(), bcrypt_cfg.cost)
-        .map_err(to_internal_error())?;
+    let password_hash =
+        hash(req_body.password.clone(), bcrypt_cfg.cost).map_err(to_internal_error())?;
     let user = InsertUser {
         contact_id,
         password_hash,
@@ -86,14 +90,16 @@ pub async fn login(
     let conn = &mut retrieve_connection(db_pool).await?;
     let contact_id = if let Some(phone_number) = req_body.phone_number.clone() {
         get_id_by_phone_number(phone_number, conn)
-        .await
-        .map_err(from_diesel_error())
+            .await
+            .map_err(from_diesel_error())
     } else if let Some(email) = req_body.email.clone() {
         get_id_by_email(email, conn)
-        .await
-        .map_err(from_diesel_error())
+            .await
+            .map_err(from_diesel_error())
     } else {
-        Err(Error::BadRequest("must provide either phone number or email".into()))
+        Err(Error::BadRequest(
+            "must provide either phone number or email".into(),
+        ))
     }?;
     let user = get_by_contact_id(contact_id, conn)
         .await
@@ -101,7 +107,7 @@ pub async fn login(
     let is_password_valid = verify(req_body.password.clone(), user.password_hash.as_ref())
         .map_err(to_internal_error())?;
     if !is_password_valid {
-        return Err(Error::InvalidPassword)
+        return Err(Error::InvalidPassword);
     }
     let exp = chrono::Utc::now()
         .checked_add_signed(chrono::Duration::seconds(jwt_cfg.access_sec_ttl))
@@ -117,8 +123,9 @@ pub async fn login(
     let access = jsonwebtoken::encode(
         &Header::default(),
         &claims,
-        &EncodingKey::from_secret(jwt_cfg.secret.as_ref())
-    ).map_err(to_internal_error())?;
+        &EncodingKey::from_secret(jwt_cfg.secret.as_ref()),
+    )
+    .map_err(to_internal_error())?;
 
-    Ok(Json(Tokens{ access }))
+    Ok(Json(Tokens { access }))
 }

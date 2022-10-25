@@ -1,18 +1,18 @@
-use super::{Result, retrieve_connection, get_claims, check_if_admin};
+use super::{check_if_admin, get_claims, retrieve_connection, Result};
 use crate::{
-    data::{DbPool, orders, contacts},
+    data::{contacts, orders, DbPool},
     errors::map::from_diesel_error,
     models::{
-        id::{ Id, keys::Keys},
-        order::{InsertOrder, Order},
         contact::InsertContact,
-    }, JwtCfg,
+        id::{keys::Keys, Id},
+        order::{InsertOrder, Order},
+    },
+    JwtCfg,
 };
 use actix_web::{
-    post,
-    HttpResponse,
-    get,
-    web::{Json, Data, Path}, HttpRequest,
+    get, post,
+    web::{Data, Json, Path},
+    HttpRequest, HttpResponse,
 };
 use diesel::result::Error as DieselError;
 use serde::Deserialize;
@@ -37,29 +37,31 @@ pub async fn create(
 ) -> Result<HttpResponse> {
     let conn = &mut retrieve_connection(db_pool).await?;
 
-    conn.build_transaction().run::<(), DieselError, _>(|conn| { Box::pin(async move {
-        let insert_contact = InsertContact {
-            phone_number: req_body.phone_number.clone(),
-            email: req_body.email.clone(),
-        };
-        let contact_id = contacts::get_id_by_phone_number_create_if_absent(
-            insert_contact,
-            conn,
-            ).await?;
+    conn.build_transaction()
+        .run::<(), DieselError, _>(|conn| {
+            Box::pin(async move {
+                let insert_contact = InsertContact {
+                    phone_number: req_body.phone_number.clone(),
+                    email: req_body.email.clone(),
+                };
+                let contact_id =
+                    contacts::get_id_by_phone_number_create_if_absent(insert_contact, conn).await?;
 
-        let mut service_id = req_body.service_id;
-        service_id.decode(keys.services);
+                let mut service_id = req_body.service_id;
+                service_id.decode(keys.services);
 
-        let order = InsertOrder {
-            contact_id,
-            service_id,
-            start_time: req_body.start_time.clone(),
-            car_make: req_body.car_make.clone(),
-            car_model: req_body.car_model.clone(),
-            car_year: req_body.car_year,
-        };
-        orders::insert(order, conn).await
-    })}).await
+                let order = InsertOrder {
+                    contact_id,
+                    service_id,
+                    start_time: req_body.start_time.clone(),
+                    car_make: req_body.car_make.clone(),
+                    car_model: req_body.car_model.clone(),
+                    car_year: req_body.car_year,
+                };
+                orders::insert(order, conn).await
+            })
+        })
+        .await
         .map(|_| HttpResponse::Created().finish())
         .map_err(from_diesel_error())
 }
@@ -73,9 +75,7 @@ pub async fn get_all(
 ) -> Result<Json<Vec<Order>>> {
     check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
     let conn = &mut retrieve_connection(db_pool).await?;
-    let mut orders = orders::get_all(conn)
-        .await
-        .map_err(from_diesel_error())?;
+    let mut orders = orders::get_all(conn).await.map_err(from_diesel_error())?;
     orders.iter_mut().for_each(|o| {
         o.id.encode(keys.orders);
         o.contact.id.encode(keys.contacts);
