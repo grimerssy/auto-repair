@@ -10,7 +10,7 @@ use crate::{
     JwtCfg,
 };
 use actix_web::{
-    get, post,
+    delete, get, post, put,
     web::{Data, Json, Path},
     HttpRequest, HttpResponse,
 };
@@ -85,7 +85,7 @@ pub async fn get_all(
     Ok(Json(orders))
 }
 
-#[get("/{id}")]
+#[get("/service/{id}")]
 pub async fn get_by_service_id(
     req: HttpRequest,
     path: Path<Id>,
@@ -107,4 +107,87 @@ pub async fn get_by_service_id(
     });
 
     Ok(Json(orders))
+}
+
+#[get("/{id}")]
+pub async fn get_by_id(
+    req: HttpRequest,
+    path: Path<Id>,
+    db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
+    keys: Data<Keys>,
+) -> Result<Json<Order>> {
+    check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
+    let mut id = path.into_inner();
+    id.decode(keys.orders);
+    let conn = &mut retrieve_connection(db_pool).await?;
+    let mut order = orders::get_by_id(id, conn)
+        .await
+        .map_err(from_diesel_error())?;
+    order.id.encode(keys.orders);
+    order.contact.id.encode(keys.contacts);
+    order.service.id.encode(keys.services);
+
+    Ok(Json(order))
+}
+
+#[put("/update/{id}")]
+pub async fn update_by_id(
+    req: HttpRequest,
+    path: Path<Id>,
+    req_body: Json<CreateRequest>,
+    db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
+    keys: Data<Keys>,
+) -> Result<HttpResponse> {
+    check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
+    let mut id = path.into_inner();
+    id.decode(keys.orders);
+    let conn = &mut retrieve_connection(db_pool).await?;
+
+    conn.build_transaction()
+        .run::<(), DieselError, _>(|conn| {
+            Box::pin(async move {
+                let insert_contact = InsertContact {
+                    phone_number: req_body.phone_number.clone(),
+                    email: req_body.email.clone(),
+                };
+                let contact_id =
+                    contacts::get_id_by_phone_number_create_if_absent(insert_contact, conn).await?;
+
+                let mut service_id = req_body.service_id;
+                service_id.decode(keys.services);
+
+                let order = InsertOrder {
+                    contact_id,
+                    service_id,
+                    start_time: req_body.start_time.clone(),
+                    car_make: req_body.car_make.clone(),
+                    car_model: req_body.car_model.clone(),
+                    car_year: req_body.car_year,
+                };
+                orders::update_by_id(id, order, conn).await
+            })
+        })
+        .await
+        .map(|_| HttpResponse::Ok().finish())
+        .map_err(from_diesel_error())
+}
+
+#[delete("/{id}")]
+pub async fn delete_by_id(
+    req: HttpRequest,
+    path: Path<Id>,
+    db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
+    keys: Data<Keys>,
+) -> Result<HttpResponse> {
+    check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
+    let mut id = path.into_inner();
+    id.decode(keys.orders);
+    let conn = &mut retrieve_connection(db_pool).await?;
+    orders::delete_by_id(id, conn)
+        .await
+        .map(|_| HttpResponse::Ok().finish())
+        .map_err(from_diesel_error())
 }

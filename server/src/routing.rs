@@ -8,7 +8,10 @@ pub fn configuration(cfg: &mut web::ServiceConfig) {
                 web::scope("/orders")
                     .service(orders::create)
                     .service(orders::get_all)
-                    .service(orders::get_by_service_id),
+                    .service(orders::get_by_id)
+                    .service(orders::get_by_service_id)
+                    .service(orders::update_by_id)
+                    .service(orders::delete_by_id),
             )
             .service(
                 web::scope("/services")

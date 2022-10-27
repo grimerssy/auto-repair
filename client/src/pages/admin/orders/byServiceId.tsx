@@ -1,6 +1,11 @@
+import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { getService, getOrdersByServiceId } from "../api/api";
+import {
+  getService,
+  getOrdersByServiceId,
+  deleteOrderById,
+} from "../../../api/api";
 import {
   Box,
   Grid,
@@ -78,6 +83,8 @@ const OrdersByService = () => {
                         <TableCell>Car make</TableCell>
                         <TableCell>Car model</TableCell>
                         <TableCell>Car year</TableCell>
+                        <TableCell>Edit</TableCell>
+                        <TableCell>Delete</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -89,6 +96,27 @@ const OrdersByService = () => {
                           <TableCell>{o.carMake}</TableCell>
                           <TableCell>{o.carModel}</TableCell>
                           <TableCell>{o.carYear}</TableCell>
+                          <TableCell>
+                            <Link to={"/admin/orders/edit/" + o.id}>
+                              <button>📝</button>
+                            </Link>
+                          </TableCell>
+                          <TableCell>
+                            <button
+                              onClick={() => {
+                                if (
+                                  confirm(
+                                    "are you sure you want to delete this order?"
+                                  )
+                                ) {
+                                  deleteOrderById(o.id);
+                                  window.location.reload();
+                                }
+                              }}
+                            >
+                              ❌
+                            </button>
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

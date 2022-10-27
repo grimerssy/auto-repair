@@ -65,7 +65,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(
                 Cors::default()
                     .allowed_origin(&client_host.clone())
-                    .allowed_methods(vec!["GET", "POST"])
+                    .allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])
                     .allow_any_header(),
             )
             .wrap(middleware::Logger::default())

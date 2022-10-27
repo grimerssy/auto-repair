@@ -48,14 +48,75 @@ export const postOrder = (order: {
   });
 };
 
+export const updateOrder = (order: {
+  id: string;
+  serviceId: string;
+  phoneNumber: string;
+  email: string | null;
+  startTime: string;
+  carMake: string;
+  carModel: string;
+  carYear: number;
+}) => {
+  const url = baseUrl + "/orders/update/" + order.id;
+  return fetch(url, {
+    method: "PUT",
+    body: JSON.stringify({
+      serviceId: order.serviceId,
+      phoneNumber: order.phoneNumber,
+      email: order.email,
+      startTime: order.startTime,
+      carMake: order.carMake,
+      carModel: order.carModel,
+      carYear: order.carYear,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+};
+
 export const getAllOrders = async () => {
   const url = baseUrl + "/orders";
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+  return await res.json();
+};
+
+export const getOrderById = async (id: string) => {
+  const url = baseUrl + "/orders/" + id;
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
   return await res.json();
 };
 
 export const getOrdersByServiceId = async (id: string) => {
+  const url = baseUrl + "/orders/service/" + id;
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+  return await res.json();
+};
+
+export const deleteOrderById = async (id: string) => {
   const url = baseUrl + "/orders/" + id;
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
   return await res.json();
 };
