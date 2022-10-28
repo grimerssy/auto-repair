@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { Box, Typography } from "@mui/material";
 import jwt from "jwt-decode";
@@ -9,17 +9,12 @@ type Claims = {
 };
 
 const Header = () => {
-  const token = localStorage.getItem("accessToken");
-  let msg: string | null = "log in";
-  let linkTo: string = "/auth/login";
+  const location = useLocation();
+  const token = localStorage.getItem("accessToken") || "";
+  let role = "";
   try {
-    const claims: Claims = jwt(token || "");
-    switch (claims.role) {
-      case "user":
-        [msg, linkTo] = [null, "/"];
-      case "admin":
-        [msg, linkTo] = ["admin panel", "/admin"];
-    }
+    let claims: Claims = jwt(token);
+    role = claims.role;
   } catch { }
 
   return (
@@ -36,9 +31,51 @@ const Header = () => {
       <Link to="/">
         <img src={logo} alt="logo" style={{ width: "3.5rem" }} />
       </Link>
-      <Link to={linkTo}>
+      {role === "admin" ? (
+        <Link to="/admin">
+          <Typography
+            variant="button"
+            sx={{
+              fontSize: 16,
+              borderRadius: 2,
+              color: "secondary.main",
+              "&:hover": {
+                color: "primary.main",
+              },
+            }}
+          >
+            admin panel
+          </Typography>
+        </Link>
+      ) : null}
+      {token ? (
+        <Link to="/contacts/edit">
+          <Typography
+            variant="button"
+            sx={{
+              fontSize: 16,
+              borderRadius: 2,
+              color: "secondary.main",
+              "&:hover": {
+                color: "primary.main",
+              },
+            }}
+          >
+            edit contact
+          </Typography>
+        </Link>
+      ) : null}
+      <Link to={token ? location.pathname : "/auth/login"}>
         <Typography
           variant="button"
+          onClick={
+            token
+              ? () => {
+                localStorage.removeItem("accessToken");
+                window.location.reload();
+              }
+              : () => { }
+          }
           sx={{
             fontSize: 16,
             borderRadius: 2,
@@ -48,7 +85,7 @@ const Header = () => {
             },
           }}
         >
-          {msg}
+          {token ? "log out" : "log in"}
         </Typography>
       </Link>
     </Box>

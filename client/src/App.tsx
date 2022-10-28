@@ -8,6 +8,7 @@ import OrdersByService from "./pages/admin/orders/byServiceId";
 import AdminPanel from "./pages/adminPanel";
 import AdminServices from "./pages/admin/services";
 import AdminEditOrder from "./pages/admin/orders/edit";
+import EditContact from "./pages/admin/contacts/edit";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/auth/login" element={<Login />} />
+        <Route path="/contacts/edit" element={<EditContact />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/admin/services" element={<AdminServices />} />
         <Route path="/services/:id" element={<BookService />} />

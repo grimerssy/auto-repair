@@ -1,6 +1,32 @@
 const serverHost = "http://127.0.0.1:8080";
 const baseUrl = serverHost + "/api";
 
+export const getContact = async () => {
+  const url = baseUrl + "/contacts";
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+  return await res.json();
+};
+
+export const updateContact = (contact: {
+  phoneNumber: string;
+  email: string | null;
+}) => {
+  const url = baseUrl + "/contacts";
+  return fetch(url, {
+    method: "PUT",
+    body: JSON.stringify(contact),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+};
+
 export const login = async (creds: {
   phoneNumber: string | null;
   email: string | null;
@@ -110,13 +136,12 @@ export const getOrdersByServiceId = async (id: string) => {
   return await res.json();
 };
 
-export const deleteOrderById = async (id: string) => {
+export const deleteOrderById = (id: string) => {
   const url = baseUrl + "/orders/" + id;
-  const res = await fetch(url, {
+  return fetch(url, {
     method: "DELETE",
     headers: {
       Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
     },
   });
-  return await res.json();
 };
