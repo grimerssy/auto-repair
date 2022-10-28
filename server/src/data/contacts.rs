@@ -60,6 +60,36 @@ async fn get_by_phone_number(phone: String, conn: &mut Connection) -> Result<Con
         .await
 }
 
+pub async fn get_by_id(id: Id, conn: &mut Connection) -> Result<Contact> {
+    use crate::schema::contacts;
+
+    contacts::table
+        .filter(contacts::id.eq(id))
+        .first::<Contact>(conn)
+        .await
+}
+
+pub async fn update_by_id(id: Id, contact: InsertContact, conn: &mut Connection) -> Result<()> {
+    use crate::schema::contacts;
+
+    if let Some(email) = contact.email {
+        update(contacts::table.filter(contacts::id.eq(id)))
+            .set((
+                contacts::phone_number.eq(contact.phone_number),
+                contacts::email.eq(email),
+            ))
+            .execute(conn)
+            .await
+            .map(|_| ())
+    } else {
+        update(contacts::table.filter(contacts::id.eq(id)))
+            .set(contacts::phone_number.eq(contact.phone_number))
+            .execute(conn)
+            .await
+            .map(|_| ())
+    }
+}
+
 async fn insert_returning_id(contact: InsertContact, conn: &mut Connection) -> Result<Id> {
     use crate::schema::contacts::dsl::*;
 

@@ -5,6 +5,11 @@ pub fn configuration(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/api")
             .service(
+                web::scope("/contacts")
+                    .service(contacts::get_by_id)
+                    .service(contacts::update_by_id),
+            )
+            .service(
                 web::scope("/orders")
                     .service(orders::create)
                     .service(orders::get_all)

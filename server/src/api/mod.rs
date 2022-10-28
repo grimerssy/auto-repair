@@ -1,3 +1,4 @@
+pub mod contacts;
 pub mod orders;
 pub mod services;
 pub mod users;
