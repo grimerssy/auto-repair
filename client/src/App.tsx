@@ -2,6 +2,7 @@ import Header from "./components/header";
 import { Route, Routes } from "react-router-dom";
 import Home from "./pages/home";
 import Login from "./pages/login";
+import Signup from "./pages/signup";
 import BookService from "./pages/bookService";
 import AdminOrders from "./pages/admin/orders";
 import OrdersByService from "./pages/admin/orders/byServiceId";
@@ -17,6 +18,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/auth/login" element={<Login />} />
+        <Route path="/auth/signup" element={<Signup />} />
         <Route path="/contacts/edit" element={<EditContact />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/admin/services" element={<AdminServices />} />

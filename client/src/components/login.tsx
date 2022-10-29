@@ -5,27 +5,13 @@ import { Box, TextField } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import { login as postLogin } from "../api/api.js";
 
-const newOnChange = (
-  regex: RegExp,
-  setValue: React.Dispatch<React.SetStateAction<string>>,
-  setValid: React.Dispatch<React.SetStateAction<boolean>>
-) => {
-  return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    let value = e.target.value;
-    setValid(regex.test(value));
-    setValue(value);
-  };
-};
-
 type Tokens = {
   access: string;
 };
 
 const Login = () => {
   const [login, setLogin] = useState("");
-  const [isLoginValid, setIsLoginValid] = useState(true);
   const [password, setPassword] = useState("");
-  const [isPasswordValid, setIsPasswordValid] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [tokens, setTokens] = useState<Tokens>({ access: "" });
   const navigate = useNavigate();
@@ -37,9 +23,6 @@ const Login = () => {
       window.location.reload();
     }
   }, [tokens]);
-
-  const phoneNumberRegex = /^[0-9]{10}$/;
-  const emailRegex = /^[a-zA-Z]+@[a-zA-Z]+\.[a-zA-Z]+$/;
 
   type apiParams = {
     phoneNumber: string | null;
@@ -55,14 +38,19 @@ const Login = () => {
       email: null,
       password: password,
     } as apiParams;
-    if (phoneNumberRegex.test(login)) {
-      params.phoneNumber = login;
-    } else if (emailRegex.test(login)) {
+    if (login.includes("@")) {
       params.email = login;
+    } else {
+      params.phoneNumber = login;
     }
     postLogin(params).then((tokens) => {
-      setTokens(tokens);
-      setIsLoading(false);
+      if (tokens.access) {
+        setTokens(tokens);
+        setIsLoading(false);
+      } else {
+        alert("Invalid login or password");
+        setIsLoading(false);
+      }
     });
   };
 
@@ -73,28 +61,15 @@ const Login = () => {
           label="Phone number or email"
           required
           value={login}
-          error={!isLoginValid}
-          onChange={newOnChange(
-            new RegExp(
-              "(" + phoneNumberRegex.source + "|" + emailRegex.source + ")"
-            ),
-            setLogin,
-            setIsLoginValid
-          )}
+          onChange={(e) => setLogin(e.target.value)}
           margin="normal"
         />
         <TextField
-          label="password"
+          label="Password"
           required
           type="password"
           value={password}
-          error={!isPasswordValid}
-          onChange={newOnChange(
-            // /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,64}$/,
-            /.+/,
-            setPassword,
-            setIsPasswordValid
-          )}
+          onChange={(e) => setPassword(e.target.value)}
           margin="normal"
         />
       </Box>
@@ -104,7 +79,6 @@ const Login = () => {
           variant="text"
           loading={isLoading}
           sx={{ mt: 4 }}
-          disabled={[isLoginValid, isPasswordValid].some((v) => !v)}
         >
           Log in
         </LoadingButton>

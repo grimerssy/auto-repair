@@ -43,6 +43,26 @@ export const login = async (creds: {
   return await res.json();
 };
 
+export const signup = async (info: {
+  phoneNumber: string | null;
+  email: string | null;
+  password: string;
+  firstName: string;
+  middleName: string | null;
+  lastName: string;
+  dateOfBirth: string;
+}) => {
+  const url = baseUrl + "/auth/signup";
+  const res = await fetch(url, {
+    method: "POST",
+    body: JSON.stringify(info),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return await res.json();
+};
+
 export const getAllServices = async () => {
   const url = baseUrl + "/services";
   const res = await fetch(url);
