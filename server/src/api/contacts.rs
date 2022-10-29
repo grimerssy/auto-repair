@@ -30,7 +30,7 @@ pub async fn get_all(
     Ok(Json(contacts))
 }
 
-#[get("self")]
+#[get("/self")]
 pub async fn get_self(
     req: HttpRequest,
     db_pool: Data<DbPool>,
@@ -56,7 +56,7 @@ pub struct UpdateRequest {
     email: Option<String>,
 }
 
-#[put("self")]
+#[put("/self")]
 pub async fn update_self(
     req: HttpRequest,
     req_body: Json<UpdateRequest>,
@@ -76,6 +76,26 @@ pub async fn update_self(
         .await
         .map(|_| HttpResponse::Ok().finish())
         .map_err(from_diesel_error())
+}
+
+#[get("/{id}")]
+pub async fn get_by_id(
+    req: HttpRequest,
+    path: Path<Id>,
+    db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
+    keys: Data<Keys>,
+) -> Result<Json<Contact>> {
+    check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
+    let mut id = path.into_inner();
+    id.decode(keys.contacts);
+    let conn = &mut retrieve_connection(db_pool).await?;
+    let mut contact = contacts::get_by_id(id, conn)
+        .await
+        .map_err(from_diesel_error())?;
+
+    contact.id.encode(keys.contacts);
+    Ok(Json(contact))
 }
 
 #[put("/{id}")]

@@ -8,6 +8,7 @@ pub fn configuration(cfg: &mut web::ServiceConfig) {
                 web::scope("/contacts")
                     .service(contacts::get_all)
                     .service(contacts::get_self)
+                    .service(contacts::get_by_id)
                     .service(contacts::update_self)
                     .service(contacts::update_by_id)
                     .service(contacts::delete_by_id),

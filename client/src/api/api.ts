@@ -1,8 +1,30 @@
 const serverHost = "http://127.0.0.1:8080";
 const baseUrl = serverHost + "/api";
 
+export const getAllContacts = async () => {
+  const url = baseUrl + "/contacts";
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+  return await res.json();
+};
+
 export const getContact = async () => {
   const url = baseUrl + "/contacts/self";
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+  return await res.json();
+};
+
+export const getContactById = async (id: string) => {
+  const url = baseUrl + "/contacts/" + id;
   const res = await fetch(url, {
     method: "GET",
     headers: {
@@ -22,6 +44,34 @@ export const updateContact = (contact: {
     body: JSON.stringify(contact),
     headers: {
       "Content-Type": "application/json",
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+};
+
+export const updateContactById = (
+  id: string,
+  contact: {
+    phoneNumber: string;
+    email: string | null;
+  }
+) => {
+  const url = baseUrl + "/contacts/" + id;
+  return fetch(url, {
+    method: "PUT",
+    body: JSON.stringify(contact),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+};
+
+export const deleteContactById = (id: string) => {
+  const url = baseUrl + "/contacts/" + id;
+  return fetch(url, {
+    method: "delete",
+    headers: {
       Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
     },
   });
