@@ -7,7 +7,10 @@ import BookService from "./pages/bookService";
 import AdminOrders from "./pages/admin/orders";
 import OrdersByService from "./pages/admin/orders/tableByServiceId";
 import Contacts from "./pages/admin/contacts/table";
+import Services from "./pages/admin/services/table";
 import AdminPanel from "./pages/adminPanel";
+import AdminAddService from "./pages/admin/services/add";
+import AdminEditService from "./pages/admin/services/edit";
 import AdminEditOrder from "./pages/admin/orders/edit";
 import AdminEditContact from "./pages/admin/contacts/edit";
 import EditContact from "./pages/admin/contacts/editSelf";
@@ -28,6 +31,9 @@ function App() {
         <Route path="/admin/orders/edit/:id" element={<AdminEditOrder />} />
         <Route path="/admin/contacts" element={<Contacts />} />
         <Route path="/admin/contacts/edit/:id" element={<AdminEditContact />} />
+        <Route path="/admin/services" element={<Services />} />
+        <Route path="/admin/services/add" element={<AdminAddService />} />
+        <Route path="/admin/services/edit/:id" element={<AdminEditService />} />
       </Routes>
     </>
   );

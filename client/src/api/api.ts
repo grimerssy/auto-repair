@@ -113,6 +113,22 @@ export const signup = async (info: {
   return await res.json();
 };
 
+export const addService = (service: {
+  title: string;
+  price: number;
+  duration: string;
+}) => {
+  const url = baseUrl + "/services";
+  return fetch(url, {
+    method: "POST",
+    body: JSON.stringify(service),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+};
+
 export const getAllServices = async () => {
   const url = baseUrl + "/services";
   const res = await fetch(url);
@@ -123,6 +139,35 @@ export const getService = async (id: string) => {
   const url = baseUrl + "/services/" + id;
   const res = await fetch(url);
   return await res.json();
+};
+
+export const updateServiceById = (
+  id: string,
+  service: {
+    title: string;
+    price: number;
+    duration: string;
+  }
+) => {
+  const url = baseUrl + "/services/" + id;
+  return fetch(url, {
+    method: "PUT",
+    body: JSON.stringify(service),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+};
+
+export const deleteServiceById = (id: string) => {
+  const url = baseUrl + "/services/" + id;
+  return fetch(url, {
+    method: "DELETE",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
 };
 
 export const postOrder = (order: {

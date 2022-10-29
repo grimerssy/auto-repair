@@ -90,7 +90,7 @@ const BookNoAuth = ({ serviceId }: props) => {
             value={startTime}
             error={!isStartTimeValid}
             onChange={newOnChange(
-              /^(0[1-9]|[1-3]\d)\.(0[1-9]|1[0-2])\.20[0-9]{2} ((1|0?)\d|2[0-3]):?([0-5]\d)$/,
+              /^(0[1-9]|[1-3]\d)\.(0[1-9]|1[0-2])\.20[0-9]{2} ((1|0?)\d|2[0-3]):([0-5]\d)$/,
               setStartTime,
               setIsStartTimeValid
             )}
