@@ -33,7 +33,9 @@ const Service = (service: Model) => {
         >
           <Grid container spacing={2}>
             <Grid item xs={6}>
-              <Typography color="#000000">{service.title}</Typography>
+              <Typography variant="button" color="#000000">
+                {service.title}
+              </Typography>
             </Grid>
             <Grid item xs={6}>
               <Typography color="#000000" align="right">
