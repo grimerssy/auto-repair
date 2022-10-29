@@ -1,22 +1,37 @@
-use super::{get_claims, retrieve_connection, Result};
+use super::{check_if_admin, get_claims, retrieve_connection, Result};
 use crate::{
     data::{contacts, DbPool},
     errors::map::from_diesel_error,
     models::{
         contact::{Contact, InsertContact},
-        id::keys::Keys,
+        id::{keys::Keys, Id},
     },
     JwtCfg,
 };
 use actix_web::{
-    get, put,
-    web::{Data, Json},
+    delete, get, put,
+    web::{Data, Json, Path},
     HttpRequest, HttpResponse,
 };
 use serde::Deserialize;
 
 #[get("")]
-pub async fn get_by_id(
+pub async fn get_all(
+    req: HttpRequest,
+    db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
+    keys: Data<Keys>,
+) -> Result<Json<Vec<Contact>>> {
+    check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
+    let conn = &mut retrieve_connection(db_pool).await?;
+    let mut contacts = contacts::get_all(conn).await.map_err(from_diesel_error())?;
+
+    contacts.iter_mut().for_each(|c| c.id.encode(keys.contacts));
+    Ok(Json(contacts))
+}
+
+#[get("self")]
+pub async fn get_self(
     req: HttpRequest,
     db_pool: Data<DbPool>,
     jwt_cfg: Data<JwtCfg>,
@@ -41,8 +56,8 @@ pub struct UpdateRequest {
     email: Option<String>,
 }
 
-#[put("")]
-pub async fn update_by_id(
+#[put("self")]
+pub async fn update_self(
     req: HttpRequest,
     req_body: Json<UpdateRequest>,
     db_pool: Data<DbPool>,
@@ -58,6 +73,47 @@ pub async fn update_by_id(
     };
     let conn = &mut retrieve_connection(db_pool).await?;
     contacts::update_by_id(id, contact, conn)
+        .await
+        .map(|_| HttpResponse::Ok().finish())
+        .map_err(from_diesel_error())
+}
+
+#[put("/{id}")]
+pub async fn update_by_id(
+    req: HttpRequest,
+    path: Path<Id>,
+    req_body: Json<UpdateRequest>,
+    db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
+    keys: Data<Keys>,
+) -> Result<HttpResponse> {
+    check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
+    let mut id = path.into_inner();
+    id.decode(keys.contacts);
+    let contact = InsertContact {
+        phone_number: req_body.phone_number.clone(),
+        email: req_body.email.clone(),
+    };
+    let conn = &mut retrieve_connection(db_pool).await?;
+    contacts::update_by_id(id, contact, conn)
+        .await
+        .map(|_| HttpResponse::Ok().finish())
+        .map_err(from_diesel_error())
+}
+
+#[delete("/{id}")]
+pub async fn delete_by_id(
+    req: HttpRequest,
+    path: Path<Id>,
+    db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
+    keys: Data<Keys>,
+) -> Result<HttpResponse> {
+    check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
+    let mut id = path.into_inner();
+    id.decode(keys.contacts);
+    let conn = &mut retrieve_connection(db_pool).await?;
+    contacts::delete_by_id(id, conn)
         .await
         .map(|_| HttpResponse::Ok().finish())
         .map_err(from_diesel_error())

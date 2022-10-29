@@ -2,7 +2,7 @@ const serverHost = "http://127.0.0.1:8080";
 const baseUrl = serverHost + "/api";
 
 export const getContact = async () => {
-  const url = baseUrl + "/contacts";
+  const url = baseUrl + "/contacts/self";
   const res = await fetch(url, {
     method: "GET",
     headers: {
@@ -16,7 +16,7 @@ export const updateContact = (contact: {
   phoneNumber: string;
   email: string | null;
 }) => {
-  const url = baseUrl + "/contacts";
+  const url = baseUrl + "/contacts/self";
   return fetch(url, {
     method: "PUT",
     body: JSON.stringify(contact),

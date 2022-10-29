@@ -3,8 +3,14 @@ use crate::models::{
     contact::{Contact, InsertContact},
     id::Id,
 };
-use diesel::{insert_into, prelude::*, update};
+use diesel::{delete, insert_into, prelude::*, update};
 use diesel_async::RunQueryDsl;
+
+pub async fn get_all(conn: &mut Connection) -> Result<Vec<Contact>> {
+    use crate::schema::contacts;
+
+    contacts::table.load::<Contact>(conn).await
+}
 
 pub async fn get_id_by_phone_number(phone_number: String, conn: &mut Connection) -> Result<Id> {
     use crate::schema::contacts;
@@ -72,22 +78,23 @@ pub async fn get_by_id(id: Id, conn: &mut Connection) -> Result<Contact> {
 pub async fn update_by_id(id: Id, contact: InsertContact, conn: &mut Connection) -> Result<()> {
     use crate::schema::contacts;
 
-    if let Some(email) = contact.email {
-        update(contacts::table.filter(contacts::id.eq(id)))
-            .set((
-                contacts::phone_number.eq(contact.phone_number),
-                contacts::email.eq(email),
-            ))
-            .execute(conn)
-            .await
-            .map(|_| ())
-    } else {
-        update(contacts::table.filter(contacts::id.eq(id)))
-            .set(contacts::phone_number.eq(contact.phone_number))
-            .execute(conn)
-            .await
-            .map(|_| ())
-    }
+    update(contacts::table.filter(contacts::id.eq(id)))
+        .set((
+            contacts::phone_number.eq(contact.phone_number),
+            contacts::email.eq(contact.email),
+        ))
+        .execute(conn)
+        .await
+        .map(|_| ())
+}
+
+pub async fn delete_by_id(id: Id, conn: &mut Connection) -> Result<()> {
+    use crate::schema::contacts;
+
+    delete(contacts::table.filter(contacts::id.eq(id)))
+        .execute(conn)
+        .await
+        .map(|_| ())
 }
 
 async fn insert_returning_id(contact: InsertContact, conn: &mut Connection) -> Result<Id> {
