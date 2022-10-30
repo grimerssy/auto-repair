@@ -113,7 +113,7 @@ export const login = async (creds: {
   return await res.json();
 };
 
-export const signup = async (info: {
+export const signup = (info: {
   phoneNumber: string | null;
   email: string | null;
   password: string;
@@ -123,14 +123,13 @@ export const signup = async (info: {
   dateOfBirth: string;
 }) => {
   const url = baseUrl + "/auth/signup";
-  const res = await fetch(url, {
+  return fetch(url, {
     method: "POST",
     body: JSON.stringify(info),
     headers: {
       "Content-Type": "application/json",
     },
   });
-  return await res.json();
 };
 
 export const addService = (service: {

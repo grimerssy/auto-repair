@@ -69,7 +69,7 @@ const OrdersByService = () => {
                           onClick={() => {
                             if (
                               confirm(
-                                "are you sure you want to delete this service?"
+                                "Are you sure you want to delete this service?"
                               )
                             ) {
                               deleteServiceById(s.id);

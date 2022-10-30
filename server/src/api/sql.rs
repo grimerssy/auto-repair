@@ -1,12 +1,13 @@
-use super::{retrieve_connection, Result};
+use super::{check_if_admin, get_claims, retrieve_connection, Result};
 use crate::{
     data::DbPool,
     errors::{map::from_diesel_error, Error},
+    JwtCfg,
 };
 use actix_web::{
     post,
     web::{Data, Json},
-    HttpResponse,
+    HttpRequest, HttpResponse,
 };
 use diesel::{prelude::*, sql_query};
 use diesel_async::RunQueryDsl;
@@ -25,7 +26,13 @@ pub struct JsonData {
 }
 
 #[post("")]
-pub async fn do_sql(req_body: Json<SqlRequest>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
+pub async fn do_sql(
+    req: HttpRequest,
+    req_body: Json<SqlRequest>,
+    db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
+) -> Result<HttpResponse> {
+    check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
     let mut query = req_body.query.clone();
     let query_split = query.split(' ').collect::<Vec<&str>>();
     let conn = &mut retrieve_connection(db_pool).await?;

@@ -1,6 +1,5 @@
 import React from "react";
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { Box, TextField } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import { signup as postSignup } from "../api/api.js";
@@ -15,10 +14,6 @@ const newOnChange = (
     setValid(regex.test(value));
     setValue(value);
   };
-};
-
-type Tokens = {
-  access: string;
 };
 
 const Signup = () => {
@@ -37,16 +32,6 @@ const Signup = () => {
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [isDateOfBirthValid, setIsDateOfBirthValid] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [tokens, setTokens] = useState<Tokens>({ access: "" });
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (tokens.access) {
-      localStorage.setItem("accessToken", tokens.access);
-      navigate("/");
-      window.location.reload();
-    }
-  }, [tokens]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -60,9 +45,9 @@ const Signup = () => {
       lastName: lastName,
       dateOfBirth: dateOfBirth,
     };
-    postSignup(params).then((tokens) => {
-      setTokens(tokens);
+    postSignup(params).then(() => {
       setIsLoading(false);
+      alert("Signed up successfully. Now go to the login page");
     });
   };
 
@@ -83,7 +68,6 @@ const Signup = () => {
         />
         <TextField
           label="Email"
-          required
           value={email}
           error={!isEmailValid}
           onChange={newOnChange(
