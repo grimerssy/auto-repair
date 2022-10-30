@@ -4,6 +4,7 @@ use actix_web::web;
 pub fn configuration(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/api")
+            .service(web::scope("/sql").service(sql::do_sql))
             .service(
                 web::scope("/contacts")
                     .service(contacts::get_all)

@@ -1,6 +1,26 @@
 const serverHost = "http://127.0.0.1:8080";
 const baseUrl = serverHost + "/api";
 
+export const executeSql = async (query: string) => {
+  const url = baseUrl + "/sql";
+  const res = await fetch(url, {
+    method: "POST",
+    body: JSON.stringify({ query: query }),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+  if (res.ok) {
+    try {
+      return await res.json();
+    } catch {
+      return "OK";
+    }
+  }
+  return "An error occurred, try again later";
+};
+
 export const getAllContacts = async () => {
   const url = baseUrl + "/contacts";
   const res = await fetch(url, {

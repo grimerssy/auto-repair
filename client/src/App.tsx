@@ -9,6 +9,7 @@ import OrdersByService from "./pages/admin/orders/tableByServiceId";
 import Contacts from "./pages/admin/contacts/table";
 import Services from "./pages/admin/services/table";
 import AdminPanel from "./pages/adminPanel";
+import SqlEdit from "./pages/admin/sql";
 import AdminAddService from "./pages/admin/services/add";
 import AdminEditService from "./pages/admin/services/edit";
 import AdminEditOrder from "./pages/admin/orders/edit";
@@ -25,6 +26,7 @@ function App() {
         <Route path="/auth/signup" element={<Signup />} />
         <Route path="/contacts/edit" element={<EditContact />} />
         <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/admin/sql" element={<SqlEdit />} />
         <Route path="/services/:id" element={<BookService />} />
         <Route path="/admin/orders" element={<AdminOrders />} />
         <Route path="/admin/orders/:id" element={<OrdersByService />} />

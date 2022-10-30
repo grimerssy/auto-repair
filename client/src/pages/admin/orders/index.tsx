@@ -19,6 +19,7 @@ const Orders = () => {
         m: 6,
         px: 4,
         py: 8,
+        borderRadius: 4,
         bgcolor: "secondary.main",
       }}
     >
