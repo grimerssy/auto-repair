@@ -7,7 +7,12 @@ use diesel::{delete, insert_into, prelude::*, update};
 use diesel_async::RunQueryDsl;
 
 pub async fn get_all(conn: &mut Connection) -> Result<Vec<Service>> {
-    crate::schema::services::table.load::<Service>(conn).await
+    use crate::schema::services;
+
+    services::table
+        .order(services::id)
+        .load::<Service>(conn)
+        .await
 }
 
 pub async fn get_by_id(service_id: Id, conn: &mut Connection) -> Result<Service> {
