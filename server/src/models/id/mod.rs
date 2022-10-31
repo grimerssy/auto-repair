@@ -1,22 +1,21 @@
 pub mod keys;
 
-use core::fmt;
-use diesel::deserialize::FromSql;
-use diesel::expression::AsExpression;
-use diesel::pg::{Pg, PgValue};
-use diesel::serialize::{self, Output, ToSql};
-use diesel::{deserialize, sql_types, FromSqlRow};
-use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
-use std::collections::HashMap;
-use std::str::FromStr;
-
-use crate::errors::ServerError;
-
 use self::keys::Key;
+use crate::errors::Error;
+use core::fmt;
+use diesel::{
+    deserialize::FromSql,
+    expression::AsExpression,
+    pg::{Pg, PgValue},
+    serialize::{self, Output, ToSql},
+    {deserialize, sql_types, FromSqlRow},
+};
+use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize, Serializer};
+use std::{collections::HashMap, str::FromStr};
 
 static DIGITS: &[u8] = "aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ".as_bytes();
 
-fn init_from_digit() -> impl Fn(u8) -> Result<i32, ServerError> {
+fn init_from_digit() -> impl Fn(u8) -> Result<i32, Error> {
     let map = DIGITS
         .iter()
         .enumerate()
@@ -26,7 +25,7 @@ fn init_from_digit() -> impl Fn(u8) -> Result<i32, ServerError> {
     move |d| {
         map.get(&d)
             .copied()
-            .ok_or_else(|| ServerError::FailToParse("invalid id format".into()))
+            .ok_or_else(|| Error::BadRequest("invalid id format".into()))
     }
 }
 
@@ -82,12 +81,12 @@ impl fmt::Display for Id {
 }
 
 impl FromStr for Id {
-    type Err = ServerError;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         const LEN: usize = 6;
         if s.len() > LEN {
-            return Err(ServerError::FailToParse("invalid id format".into()));
+            return Err(Error::BadRequest("invalid id format".into()));
         }
         let radix = DIGITS.len() as i32;
         let mut result = 0;

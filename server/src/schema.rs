@@ -29,11 +29,26 @@ diesel::table! {
     }
 }
 
+diesel::table! {
+    users (contact_id) {
+        contact_id -> Int4,
+        password_hash -> Varchar,
+        role -> Varchar,
+        first_name -> Varchar,
+        middle_name -> Nullable<Varchar>,
+        last_name -> Varchar,
+        date_of_birth -> Date,
+        registered_at -> Timestamp,
+    }
+}
+
 diesel::joinable!(orders -> contacts (contact_id));
 diesel::joinable!(orders -> services (service_id));
+diesel::joinable!(users -> contacts (contact_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     contacts,
     orders,
     services,
+    users,
 );

@@ -1,39 +1,30 @@
+import { getAllServices } from "../api/api";
 import { useState, useEffect } from "react";
-import Service from "../components/service.tsx";
-import { getAllServices } from "../api/api.ts";
+import ServiceComponent from "../components/service";
+import { Box, Grid } from "@mui/material";
+import { Service } from "../models";
 
 const Home = () => {
-  const [services, setServices] = useState([]);
+  const [services, setServices] = useState<Service[]>([]);
 
   useEffect(() => {
     getAllServices().then((data) => {
-      let nested = [];
-      for (let i = 0; i < Math.ceil(data.length / 3); i++) {
-        nested.push([]);
-      }
-      for (let i = 0; i < data.length; i++) {
-        let index = Math.floor(i / 3);
-        nested[index].push(data[i]);
-      }
-      setServices(nested);
+      setServices(data);
     });
   }, []);
 
   return (
-    <div className="flex flex-col mx-16 items-center">
-      {services.map((n, i) => (
-        <div class="w-11/12 flex flex-row justify-between items-center mt-10">
-          {n.map((s, i) => (
-            <Service
-              id={s.id}
-              title={s.title}
-              price={s.price}
-              duration={s.duration}
-            />
-          ))}
-        </div>
-      ))}
-    </div>
+    <Box sx={{ m: 6 }}>
+      <Grid container spacing={6}>
+        {services.map((s, i: number) => (
+          <Grid key={i} item xs={4}>
+            <Box>
+              <ServiceComponent {...s} />
+            </Box>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
   );
 };
 

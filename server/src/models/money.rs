@@ -1,11 +1,12 @@
-use std::ops::{Add, AddAssign, Sub, SubAssign};
-
-use diesel::deserialize::{self, FromSql, FromSqlRow};
-use diesel::expression::AsExpression;
-use diesel::pg::{Pg, PgValue};
-use diesel::serialize::{self, Output, ToSql};
-use diesel::sql_types::{self, BigInt};
+use diesel::{
+    deserialize::{self, FromSql, FromSqlRow},
+    expression::AsExpression,
+    pg::{Pg, PgValue},
+    serialize::{self, Output, ToSql},
+    sql_types::{self, BigInt},
+};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, AsExpression, FromSqlRow)]
 #[diesel(sql_type = sql_types::Money)]

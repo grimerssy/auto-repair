@@ -5,3 +5,4 @@ pub mod time;
 pub mod contact;
 pub mod order;
 pub mod service;
+pub mod user;

@@ -1,19 +1,94 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import logo from "../assets/logo.png";
+import { Box, Typography } from "@mui/material";
+import jwt from "jwt-decode";
+
+type Claims = {
+  sub: string;
+  role: string;
+};
 
 const Header = () => {
+  const location = useLocation();
+  const token = localStorage.getItem("accessToken") || "";
+  let role = "";
+  try {
+    let claims: Claims = jwt(token);
+    role = claims.role;
+  } catch { }
+
   return (
-    <div className="sticky w-full h-12 flex justify-between items-center bg-gray-800">
-      <Link to="/" className="h-3/4 w-10 mb-1">
-        <img src={logo} alt="logo" className="h-full mx-4" />
+    <Box
+      sx={{
+        px: 4,
+        height: "5rem",
+        bgcolor: "#2a2836",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}
+    >
+      <Link to="/">
+        <img src={logo} alt="logo" style={{ width: "3.5rem" }} />
       </Link>
-      <Link
-        to="/"
-        className="mx-4 text-indigo-300 rounded p-1 hover:bg-gray-700"
-      >
-        log in
+      {role === "admin" ? (
+        <Link to="/admin">
+          <Typography
+            variant="button"
+            sx={{
+              fontSize: 16,
+              borderRadius: 2,
+              color: "secondary.main",
+              "&:hover": {
+                color: "primary.main",
+              },
+            }}
+          >
+            admin panel
+          </Typography>
+        </Link>
+      ) : null}
+      {token ? (
+        <Link to="/contacts/edit">
+          <Typography
+            variant="button"
+            sx={{
+              fontSize: 16,
+              borderRadius: 2,
+              color: "secondary.main",
+              "&:hover": {
+                color: "primary.main",
+              },
+            }}
+          >
+            edit contact
+          </Typography>
+        </Link>
+      ) : null}
+      <Link to={token ? location.pathname : "/auth/login"}>
+        <Typography
+          variant="button"
+          onClick={
+            token
+              ? () => {
+                localStorage.removeItem("accessToken");
+                window.location.reload();
+              }
+              : () => { }
+          }
+          sx={{
+            fontSize: 16,
+            borderRadius: 2,
+            color: "secondary.main",
+            "&:hover": {
+              color: "primary.main",
+            },
+          }}
+        >
+          {token ? "log out" : "log in"}
+        </Typography>
       </Link>
-    </div>
+    </Box>
   );
 };
 
