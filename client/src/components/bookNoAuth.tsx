@@ -112,7 +112,7 @@ const BookNoAuth = ({ serviceId }: props) => {
             value={carModel}
             error={!isCarModelValid}
             onChange={newOnChange(
-              /^[a-zA-Z]+$/,
+              /^[a-zA-Z\- ]+$/,
               setCarModel,
               setIsCarModelValid
             )}

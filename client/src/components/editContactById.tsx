@@ -66,7 +66,7 @@ const EditContact = ({ id, contact }: props) => {
           value={email}
           error={!isEmailValid}
           onChange={newOnChange(
-            /^(|[a-zA-Z]+@[a-zA-Z]+\.[a-zA-Z]+)$/,
+            /^(|[a-zA-Z_]+@[a-zA-Z]+\.[a-zA-Z]+)$/,
             setEmail,
             setIsEmailValid
           )}
