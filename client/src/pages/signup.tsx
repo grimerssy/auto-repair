@@ -12,7 +12,7 @@ const Login = () => {
       <Box
         sx={{
           p: 4,
-          mt: 4,
+          my: 4,
           width: 0.6,
           bgcolor: "secondary.main",
           borderRadius: 2,

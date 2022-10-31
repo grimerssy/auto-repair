@@ -23,23 +23,17 @@ const Login = () => {
       >
         <LoginForm />
       </Box>
-      <Box
-        sx={{
-          p: 4,
-          mt: 4,
-          width: 0.6,
-          bgcolor: "secondary.main",
-          borderRadius: 2,
-          display: "flex",
-          justifyContent: "center",
-        }}
+      <Typography
+        variant="overline"
+        align="center"
+        sx={{ bgcolor: "secondary.main", p: 4, borderRadius: 4, m: 4 }}
       >
-        <Typography variant="button" align="center">
-          or
-          <Link to="/auth/signup">{" sign up "}</Link>
-          if you haven't already
-        </Typography>
-      </Box>
+        or
+        <Link to="/auth/signup">
+          <Typography variant="button">{" sign up "}</Typography>
+        </Link>
+        if you haven't already
+      </Typography>
     </Box>
   );
 };
