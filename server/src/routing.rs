@@ -4,7 +4,19 @@ use actix_web::web;
 pub fn configuration(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/api")
-            .service(web::scope("/sql").service(sql::do_sql))
+            .service(
+                web::scope("/auth")
+                    .service(users::signup)
+                    .service(users::login),
+            )
+            .service(
+                web::scope("/cars")
+                    .service(cars::create)
+                    .service(cars::get_all)
+                    .service(cars::get_by_vin)
+                    .service(cars::update_by_vin)
+                    .service(cars::delete_by_vin),
+            )
             .service(
                 web::scope("/contacts")
                     .service(contacts::get_all)
@@ -32,9 +44,13 @@ pub fn configuration(cfg: &mut web::ServiceConfig) {
                     .service(services::update_by_id),
             )
             .service(
-                web::scope("/auth")
-                    .service(users::signup)
-                    .service(users::login),
-            ),
+                web::scope("/workers")
+                    .service(workers::create)
+                    .service(workers::get_all)
+                    .service(workers::get_by_id)
+                    .service(workers::update_by_id)
+                    .service(workers::delete_by_id),
+            )
+            .service(web::scope("/sql").service(sql::do_sql)),
     );
 }

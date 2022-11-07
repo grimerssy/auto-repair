@@ -10,6 +10,8 @@ pub struct Keys {
     pub contacts: Key,
     pub orders: Key,
     pub services: Key,
+    pub specialties: Key,
+    pub workers: Key,
 }
 
 impl Key {

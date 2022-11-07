@@ -1,0 +1,5 @@
+CREATE TABLE specialties (
+    id SERIAL PRIMARY KEY,
+    service_id INTEGER NOT NULL REFERENCES services(id) ON DELETE CASCADE,
+    worker_id INTEGER NOT NULL REFERENCES workers(id) ON DELETE CASCADE
+);

@@ -22,11 +22,9 @@ use serde::Deserialize;
 pub struct CreateRequest {
     phone_number: String,
     email: Option<String>,
-    service_id: Id,
+    specialty_id: Id,
     start_time: String,
-    car_make: String,
-    car_model: String,
-    car_year: i16,
+    car_vin: String,
 }
 
 #[post("")]
@@ -47,16 +45,13 @@ pub async fn create(
                 let contact_id =
                     contacts::get_id_by_phone_number_create_if_absent(insert_contact, conn).await?;
 
-                let mut service_id = req_body.service_id;
-                service_id.decode(keys.services);
+                let mut specialty_id = req_body.specialty_id;
+                specialty_id.decode(keys.specialties);
 
                 let order = InsertOrder {
-                    contact_id,
-                    service_id,
+                    specialty_id,
+                    car_vin: req_body.car_vin.clone(),
                     start_time: req_body.start_time.clone(),
-                    car_make: req_body.car_make.clone(),
-                    car_model: req_body.car_model.clone(),
-                    car_year: req_body.car_year,
                 };
                 orders::insert(order, conn).await
             })
@@ -78,8 +73,9 @@ pub async fn get_all(
     let mut orders = orders::get_all(conn).await.map_err(from_diesel_error())?;
     orders.iter_mut().for_each(|o| {
         o.id.encode(keys.orders);
-        o.contact.id.encode(keys.contacts);
         o.service.id.encode(keys.services);
+        o.worker.id.encode(keys.workers);
+        o.car.contact.id.encode(keys.contacts);
     });
 
     Ok(Json(orders))
@@ -102,8 +98,9 @@ pub async fn get_by_service_id(
         .map_err(from_diesel_error())?;
     orders.iter_mut().for_each(|o| {
         o.id.encode(keys.orders);
-        o.contact.id.encode(keys.contacts);
         o.service.id.encode(keys.services);
+        o.worker.id.encode(keys.workers);
+        o.car.contact.id.encode(keys.contacts);
     });
 
     Ok(Json(orders))
@@ -125,8 +122,9 @@ pub async fn get_by_id(
         .await
         .map_err(from_diesel_error())?;
     order.id.encode(keys.orders);
-    order.contact.id.encode(keys.contacts);
     order.service.id.encode(keys.services);
+    order.worker.id.encode(keys.workers);
+    order.car.contact.id.encode(keys.contacts);
 
     Ok(Json(order))
 }
@@ -155,16 +153,13 @@ pub async fn update_by_id(
                 let contact_id =
                     contacts::get_id_by_phone_number_create_if_absent(insert_contact, conn).await?;
 
-                let mut service_id = req_body.service_id;
-                service_id.decode(keys.services);
+                let mut specialty_id = req_body.specialty_id;
+                specialty_id.decode(keys.specialties);
 
                 let order = InsertOrder {
-                    contact_id,
-                    service_id,
+                    specialty_id,
+                    car_vin: req_body.car_vin.clone(),
                     start_time: req_body.start_time.clone(),
-                    car_make: req_body.car_make.clone(),
-                    car_model: req_body.car_model.clone(),
-                    car_year: req_body.car_year,
                 };
                 orders::update_by_id(id, order, conn).await
             })

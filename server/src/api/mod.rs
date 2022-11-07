@@ -1,8 +1,10 @@
+pub mod cars;
 pub mod contacts;
 pub mod orders;
 pub mod services;
 pub mod sql;
 pub mod users;
+pub mod workers;
 
 use crate::{
     data::{DbPool, PooledConnection},

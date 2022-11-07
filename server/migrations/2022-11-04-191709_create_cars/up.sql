@@ -1,0 +1,7 @@
+CREATE TABLE cars (
+    vin VARCHAR(17) PRIMARY KEY,
+    contact_id INTEGER NOT NULL REFERENCES contacts(id) ON DELETE CASCADE,
+    make VARCHAR(32) NOT NULL,
+    model VARCHAR(32) NOT NULL,
+    year SMALLINT NOT NULL
+);

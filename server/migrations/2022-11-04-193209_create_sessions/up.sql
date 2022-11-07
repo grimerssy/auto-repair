@@ -1,0 +1,6 @@
+CREATE TABLE sessions(
+    "key" VARCHAR(128) PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(contact_id) ON DELETE CASCADE,
+    id_address VARCHAR(15) NOT NULL,
+    exp TIMESTAMP NOT NULL
+);

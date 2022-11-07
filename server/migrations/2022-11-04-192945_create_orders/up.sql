@@ -1,0 +1,6 @@
+CREATE TABLE orders(
+    id SERIAL PRIMARY KEY,
+    specialty_id INTEGER NOT NULL REFERENCES specialties(id) ON DELETE CASCADE,
+    car_vin VARCHAR(17) NOT NULL REFERENCES cars(vin) ON DELETE CASCADE,
+    start_time TIMESTAMP NOT NULL
+);

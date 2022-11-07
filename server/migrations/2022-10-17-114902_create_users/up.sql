@@ -5,7 +5,7 @@ CREATE TABLE users (
     first_name VARCHAR(32) NOT NULL,
     middle_name VARCHAR(32),
     last_name VARCHAR(32) NOT NULL,
-    date_of_birth Date NOT NULL,
+    date_of_birth DATE NOT NULL,
     registered_at TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_contact_id FOREIGN KEY (
         contact_id
