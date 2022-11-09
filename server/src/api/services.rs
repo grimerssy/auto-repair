@@ -46,7 +46,45 @@ pub async fn create(
         .map_err(from_diesel_error())
 }
 
-#[get("")]
+#[post("/specialties/{worker_id}/{service_id}")]
+pub async fn add_for_worker(
+    req: HttpRequest,
+    path: Path<(Id, Id)>,
+    db_pool: Data<DbPool>,
+    keys: Data<Keys>,
+    jwt_cfg: Data<JwtCfg>,
+) -> Result<HttpResponse> {
+    check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
+    let (mut worker_id, mut service_id) = path.into_inner();
+    worker_id.decode(keys.workers);
+    service_id.decode(keys.services);
+    let conn = &mut retrieve_connection(db_pool).await?;
+    services::add_to_worker(worker_id, service_id, conn)
+        .await
+        .map(|_| HttpResponse::Created().finish())
+        .map_err(from_diesel_error())
+}
+
+#[get("/specialties/{worker_id}")]
+pub async fn get_for_worker(
+    req: HttpRequest,
+    path: Path<Id>,
+    db_pool: Data<DbPool>,
+    keys: Data<Keys>,
+    jwt_cfg: Data<JwtCfg>,
+) -> Result<Json<Vec<Service>>> {
+    check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
+    let mut worker_id = path.into_inner();
+    worker_id.decode(keys.workers);
+    let conn = &mut retrieve_connection(db_pool).await?;
+    let mut results = services::get_for_worker(worker_id, conn)
+        .await
+        .map_err(from_diesel_error())?;
+    results.iter_mut().for_each(|r| r.id.encode(keys.services));
+    Ok(Json(results))
+}
+
+#[get("/{worker_id}")]
 pub async fn get_all(db_pool: Data<DbPool>, keys: Data<Keys>) -> Result<Json<Vec<Service>>> {
     let conn = &mut retrieve_connection(db_pool).await?;
     let mut results = services::get_all(conn).await.map_err(from_diesel_error())?;
@@ -116,6 +154,25 @@ pub async fn delete_by_id(
     id.decode(keys.services);
     let conn = &mut retrieve_connection(db_pool).await?;
     services::delete_by_id(id, conn)
+        .await
+        .map(|_| HttpResponse::Ok().finish())
+        .map_err(from_diesel_error())
+}
+
+#[delete("/specialties/{worker_id}/{service_id}")]
+pub async fn remove_for_worker(
+    req: HttpRequest,
+    path: Path<(Id, Id)>,
+    db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
+    keys: Data<Keys>,
+) -> Result<HttpResponse> {
+    check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
+    let (mut worker_id, mut service_id) = path.into_inner();
+    worker_id.decode(keys.workers);
+    service_id.decode(keys.services);
+    let conn = &mut retrieve_connection(db_pool).await?;
+    services::remove_for_worker(worker_id, service_id, conn)
         .await
         .map(|_| HttpResponse::Ok().finish())
         .map_err(from_diesel_error())
