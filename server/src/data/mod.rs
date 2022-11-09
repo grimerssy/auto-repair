@@ -24,6 +24,15 @@ pub async fn get_connection_pool(url: String) -> Result<DbPool> {
     Ok(Pool::builder(manager).max_size(5).build().unwrap())
 }
 
+pub fn sql_to_chrono_format(sql_format: &str) -> String {
+    let result = sql_format.replace("DD", "%d");
+    let result = &result.replace("MM", "%m");
+    let result = &result.replace("YYYY", "%Y");
+    let result = &result.replace("HH24", "%H");
+    let result = &result.replace("MI", "%M");
+    result.to_owned()
+}
+
 pub mod date {
     use diesel::{
         sql_function,
@@ -54,7 +63,7 @@ pub mod time {
     }
 
     sql_function! {
-        fn to_time(t: Text, f: Text) -> Time;
+        fn to_timestamp(t: Text, f: Text) -> Time;
     }
 }
 

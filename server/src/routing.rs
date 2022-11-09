@@ -28,6 +28,7 @@ pub fn configuration(cfg: &mut web::ServiceConfig) {
             )
             .service(
                 web::scope("/orders")
+                    .service(orders::get_available_time)
                     .service(orders::create)
                     .service(orders::get_all)
                     .service(orders::get_by_id)

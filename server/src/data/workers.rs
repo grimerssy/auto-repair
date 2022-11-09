@@ -49,8 +49,8 @@ pub async fn insert(worker: InsertWorker, conn: &mut Connection) -> Result<()> {
             middle_name.eq(worker.middle_name),
             last_name.eq(worker.last_name),
             date_of_birth.eq(date::to_date(worker.date_of_birth, date::FORMAT)),
-            start_time.eq(time::to_time(worker.start_time, time::FORMAT)),
-            end_time.eq(time::to_time(worker.end_time, time::FORMAT)),
+            start_time.eq(time::to_timestamp(worker.start_time, time::FORMAT)),
+            end_time.eq(time::to_timestamp(worker.end_time, time::FORMAT)),
         ))
         .execute(conn)
         .await
@@ -66,8 +66,8 @@ pub async fn update_by_id(worker: Worker, conn: &mut Connection) -> Result<()> {
             middle_name.eq(worker.middle_name),
             last_name.eq(worker.last_name),
             date_of_birth.eq(date::to_date(worker.date_of_birth, date::FORMAT)),
-            start_time.eq(time::to_time(worker.start_time, time::FORMAT)),
-            end_time.eq(time::to_time(worker.end_time, time::FORMAT)),
+            start_time.eq(time::to_timestamp(worker.start_time, time::FORMAT)),
+            end_time.eq(time::to_timestamp(worker.end_time, time::FORMAT)),
         ))
         .execute(conn)
         .await

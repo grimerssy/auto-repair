@@ -17,6 +17,21 @@ use actix_web::{
 use diesel::result::Error as DieselError;
 use serde::Deserialize;
 
+#[get("/service/time/{service_id}")]
+pub async fn get_available_time(
+    path: Path<Id>,
+    db_pool: Data<DbPool>,
+    keys: Data<Keys>,
+) -> Result<Json<Vec<(String, Vec<String>)>>> {
+    let mut service_id = path.into_inner();
+    service_id.decode(keys.services);
+    let conn = &mut retrieve_connection(db_pool).await?;
+    orders::get_available_time(service_id, conn)
+        .await
+        .map(Json)
+        .map_err(from_diesel_error())
+}
+
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
@@ -81,7 +96,7 @@ pub async fn get_all(
     Ok(Json(orders))
 }
 
-#[get("/service/{id}")]
+#[get("/service/{service_id}")]
 pub async fn get_by_service_id(
     req: HttpRequest,
     path: Path<Id>,

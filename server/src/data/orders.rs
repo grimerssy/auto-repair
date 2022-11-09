@@ -1,10 +1,119 @@
-use super::{date, time, timestamp, Connection, Result};
+use std::collections::{HashMap, HashSet, VecDeque};
+
+use super::{date, sql_to_chrono_format, time, timestamp, Connection, Result};
 use crate::models::{
     id::Id,
     order::{InsertOrder, Order},
 };
-use diesel::{delete, insert_into, prelude::*, update};
+use diesel::{delete, dsl::IntervalDsl, insert_into, prelude::*, update};
 use diesel_async::RunQueryDsl;
+
+#[derive(Queryable, Debug)]
+struct WorkerInfo {
+    id: Id,
+    start_time: chrono::NaiveTime,
+    end_time: chrono::NaiveTime,
+}
+
+#[derive(Queryable, Debug)]
+struct OrderInfo {
+    start_time: chrono::NaiveDateTime,
+    duration: chrono::NaiveTime,
+}
+
+pub async fn get_available_time(
+    service_id: Id,
+    conn: &mut Connection,
+) -> Result<Vec<(String, Vec<String>)>> {
+    use crate::schema::{orders, services, specialties, workers};
+    let service_duration = services::table
+        .select(services::duration)
+        .filter(services::id.eq(service_id))
+        .first::<chrono::NaiveTime>(conn)
+        .await?
+        .signed_duration_since(chrono::NaiveTime::default());
+    let worker_info = workers::table
+        .inner_join(specialties::table.on(workers::id.eq(specialties::worker_id)))
+        .select((workers::id, workers::start_time, workers::end_time))
+        .filter(specialties::service_id.eq(service_id))
+        .load::<WorkerInfo>(conn)
+        .await?;
+    let now = chrono::offset::Utc::now().naive_utc();
+    let mut timestamps = Vec::<chrono::NaiveDateTime>::new();
+    for wi in worker_info {
+        let mut worker_timestamps = VecDeque::<chrono::NaiveDateTime>::new();
+        for i in 0..7 {
+            let current_date = now.date() + chrono::Duration::days(i);
+            if current_date.and_time(wi.end_time) < now {
+                continue;
+            }
+            worker_timestamps.push_back(current_date.and_time(wi.start_time).max(now));
+            worker_timestamps.push_back(current_date.and_time(wi.end_time));
+        }
+        let order_info = orders::table
+            .inner_join(specialties::table.on(orders::specialty_id.eq(specialties::id)))
+            .inner_join(services::table.on(specialties::service_id.eq(services::id)))
+            .select((orders::start_time, services::duration))
+            .filter(specialties::worker_id.eq(wi.id))
+            .filter(orders::start_time.gt(diesel::dsl::now))
+            .filter(orders::start_time.lt(diesel::dsl::now + 7.days()))
+            .load::<OrderInfo>(conn)
+            .await?;
+
+        for oi in order_info {
+            while !worker_timestamps.is_empty()
+                && *worker_timestamps.front().unwrap() < oi.start_time
+            {
+                timestamps.push(worker_timestamps.pop_front().unwrap());
+            }
+            timestamps.push(oi.start_time);
+            let end_time = oi.start_time
+                + oi.duration
+                    .signed_duration_since(chrono::NaiveTime::default());
+            timestamps.push(end_time);
+        }
+        while !worker_timestamps.is_empty() {
+            timestamps.push(worker_timestamps.pop_front().unwrap());
+        }
+    }
+    let mut results = HashSet::<chrono::NaiveDateTime>::new();
+    for i in 0..(timestamps.len() / 2) {
+        let start = timestamps[i * 2];
+        let end = timestamps[i * 2 + 1];
+        let time_gap = end - start;
+        if time_gap < service_duration {
+            continue;
+        }
+        let diff_minutes = (time_gap - service_duration).num_minutes();
+        for j in 0..=(diff_minutes / 15) {
+            let ts = start + chrono::Duration::minutes(15 * j);
+            results.insert(ts);
+        }
+    }
+    let mut hashmap = HashMap::<chrono::NaiveDate, Vec<chrono::NaiveTime>>::new();
+    results.into_iter().for_each(|r| {
+        hashmap
+            .entry(r.date())
+            .or_insert_with(Vec::new)
+            .push(r.time());
+    });
+    let date_format = &sql_to_chrono_format(date::FORMAT);
+    let time_format = &sql_to_chrono_format(time::FORMAT);
+    let mut tuples: Vec<(String, Vec<String>)> = hashmap
+        .into_iter()
+        .map(|(d, mut tt)| {
+            tt.sort();
+            (
+                d.format(date_format).to_string(),
+                tt.into_iter()
+                    .map(|t| t.format(time_format).to_string())
+                    .collect(),
+            )
+        })
+        .collect();
+    tuples.sort_by_key(|(x, _)| x.to_owned());
+    Ok(tuples)
+}
 
 pub async fn insert(order: InsertOrder, conn: &mut Connection) -> Result<()> {
     use crate::schema::*;
