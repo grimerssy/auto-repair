@@ -41,6 +41,7 @@ pub fn configuration(cfg: &mut web::ServiceConfig) {
                     .service(services::create)
                     .service(services::get_all)
                     .service(services::get_by_id)
+                    .service(services::get_by_title)
                     .service(services::delete_by_id)
                     .service(services::update_by_id)
                     .service(services::add_for_worker)

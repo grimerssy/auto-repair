@@ -108,6 +108,21 @@ pub async fn get_by_id(
     Ok(Json(result))
 }
 
+#[get("/title/{title}")]
+pub async fn get_by_title(
+    path: Path<String>,
+    db_pool: Data<DbPool>,
+    keys: Data<Keys>,
+) -> Result<Json<Vec<Service>>> {
+    let title = path.into_inner();
+    let conn = &mut retrieve_connection(db_pool).await?;
+    let mut results = services::get_by_title(title, conn)
+        .await
+        .map_err(from_diesel_error())?;
+    results.iter_mut().for_each(|r| r.id.encode(keys.services));
+    Ok(Json(results))
+}
+
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateRequest {

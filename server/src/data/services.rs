@@ -23,6 +23,14 @@ pub async fn get_by_id(service_id: Id, conn: &mut Connection) -> Result<Service>
         .await
 }
 
+pub async fn get_by_title(title: String, conn: &mut Connection) -> Result<Vec<Service>> {
+    use crate::schema::services;
+    services::table
+        .filter(services::title.like(format!("%{}%", title)))
+        .load::<Service>(conn)
+        .await
+}
+
 pub async fn get_for_worker(worker_id: Id, conn: &mut Connection) -> Result<Vec<Service>> {
     use crate::schema::{services, specialties};
     services::table
