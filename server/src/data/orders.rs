@@ -5,6 +5,7 @@ use crate::models::{
     id::Id,
     order::{InsertOrder, Order},
 };
+use chrono::DurationRound;
 use diesel::{delete, dsl::IntervalDsl, insert_into, prelude::*, update};
 use diesel_async::RunQueryDsl;
 
@@ -39,15 +40,18 @@ pub async fn get_available_time(
         .load::<WorkerInfo>(conn)
         .await?;
     let now = chrono::offset::Utc::now().naive_utc();
+    let now_ceil = (now + chrono::Duration::seconds(15 * 60 / 2))
+        .duration_round(chrono::Duration::minutes(15))
+        .unwrap();
     let mut timestamps = Vec::<chrono::NaiveDateTime>::new();
     for wi in worker_info {
         let mut worker_timestamps = VecDeque::<chrono::NaiveDateTime>::new();
         for i in 0..7 {
             let current_date = now.date() + chrono::Duration::days(i);
-            if current_date.and_time(wi.end_time) < now {
+            if current_date.and_time(wi.end_time) < now_ceil {
                 continue;
             }
-            worker_timestamps.push_back(current_date.and_time(wi.start_time).max(now));
+            worker_timestamps.push_back(current_date.and_time(wi.start_time).max(now_ceil));
             worker_timestamps.push_back(current_date.and_time(wi.end_time));
         }
         let order_info = orders::table
