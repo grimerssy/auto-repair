@@ -1,9 +1,7 @@
 use super::{retrieve_connection, Claims, Result};
 use crate::{
     data::{
-        contacts::{
-            get_id_by_email, get_id_by_phone_number, get_id_by_phone_number_create_if_absent,
-        },
+        contacts::*,
         users::{get_by_contact_id, insert},
         DbPool,
     },
@@ -46,7 +44,7 @@ pub async fn signup(
         phone_number: req_body.phone_number.clone(),
         email: req_body.email.clone(),
     };
-    let contact_id = get_id_by_phone_number_create_if_absent(insert_contact, conn)
+    let contact_id = upsert_returning_id(insert_contact, conn)
         .await
         .map_err(from_diesel_error())?;
     let password_hash =

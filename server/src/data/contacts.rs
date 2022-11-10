@@ -32,16 +32,13 @@ pub async fn get_id_by_email(email: String, conn: &mut Connection) -> Result<Id>
         .await
 }
 
-pub async fn get_id_by_phone_number_create_if_absent(
-    contact: InsertContact,
-    conn: &mut Connection,
-) -> Result<Id> {
+pub async fn upsert_returning_id(contact: InsertContact, conn: &mut Connection) -> Result<Id> {
     let contact_result = get_by_phone_number(contact.phone_number.clone(), conn).await;
 
     match contact_result {
         Ok(mut db_contact) => {
             let id = db_contact.id;
-            if contact.email.clone() != None {
+            if contact.email.clone().is_some() {
                 db_contact.email = contact.email.clone();
                 update_email(db_contact, conn).await?;
             }

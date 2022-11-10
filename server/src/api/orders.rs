@@ -57,8 +57,7 @@ pub async fn create(
                     phone_number: req_body.phone_number.clone(),
                     email: req_body.email.clone(),
                 };
-                let contact_id =
-                    contacts::get_id_by_phone_number_create_if_absent(insert_contact, conn).await?;
+                let _ = contacts::upsert_returning_id(insert_contact, conn).await?;
 
                 let mut specialty_id = req_body.specialty_id;
                 specialty_id.decode(keys.specialties);
@@ -165,8 +164,7 @@ pub async fn update_by_id(
                     phone_number: req_body.phone_number.clone(),
                     email: req_body.email.clone(),
                 };
-                let contact_id =
-                    contacts::get_id_by_phone_number_create_if_absent(insert_contact, conn).await?;
+                let _ = contacts::upsert_returning_id(insert_contact, conn).await?;
 
                 let mut specialty_id = req_body.specialty_id;
                 specialty_id.decode(keys.specialties);

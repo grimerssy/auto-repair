@@ -21,7 +21,7 @@ pub struct SqlRequest {
 
 #[derive(QueryableByName)]
 pub struct JsonData {
-    #[sql_type = "diesel::sql_types::Text"]
+    #[diesel(sql_type = diesel::sql_types::Text)]
     pub data: String,
 }
 
