@@ -84,7 +84,7 @@ pub async fn get_for_worker(
     Ok(Json(results))
 }
 
-#[get("/{worker_id}")]
+#[get("")]
 pub async fn get_all(db_pool: Data<DbPool>, keys: Data<Keys>) -> Result<Json<Vec<Service>>> {
     let conn = &mut retrieve_connection(db_pool).await?;
     let mut results = services::get_all(conn).await.map_err(from_diesel_error())?;
