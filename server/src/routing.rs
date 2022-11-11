@@ -12,7 +12,9 @@ pub fn configuration(cfg: &mut web::ServiceConfig) {
             .service(
                 web::scope("/cars")
                     .service(cars::create)
+                    .service(cars::create_for_self)
                     .service(cars::get_all)
+                    .service(cars::get_for_self)
                     .service(cars::get_by_vin)
                     .service(cars::update_by_vin)
                     .service(cars::delete_by_vin),

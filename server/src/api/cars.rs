@@ -51,20 +51,82 @@ pub async fn create(
         .map_err(from_diesel_error())
 }
 
-#[get("")]
-pub async fn get_all(db_pool: Data<DbPool>) -> Result<Json<Vec<Car>>> {
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateForSelfRequest {
+    vin: String,
+    make: String,
+    model: String,
+    year: i16,
+}
+
+#[post("/self")]
+pub async fn create_for_self(
+    req: HttpRequest,
+    req_body: Json<CreateForSelfRequest>,
+    db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
+    keys: Data<Keys>,
+) -> Result<HttpResponse> {
+    let claims = get_claims(&req, &jwt_cfg.secret).await?;
+    let mut contact_id = claims.sub;
+    contact_id.decode(keys.contacts);
     let conn = &mut retrieve_connection(db_pool).await?;
-    let results = cars::get_all(conn).await.map_err(from_diesel_error())?;
+    let car = InsertCar {
+        vin: req_body.vin.clone(),
+        contact_id,
+        make: req_body.make.clone(),
+        model: req_body.model.clone(),
+        year: req_body.year,
+    };
+    cars::insert(car, conn)
+        .await
+        .map(|_| HttpResponse::Created().finish())
+        .map_err(from_diesel_error())
+}
+
+#[get("")]
+pub async fn get_all(db_pool: Data<DbPool>, keys: Data<Keys>) -> Result<Json<Vec<Car>>> {
+    let conn = &mut retrieve_connection(db_pool).await?;
+    let mut results = cars::get_all(conn).await.map_err(from_diesel_error())?;
+    results
+        .iter_mut()
+        .for_each(|r| r.contact.id.encode(keys.contacts));
+    Ok(Json(results))
+}
+
+#[get("/self")]
+pub async fn get_for_self(
+    req: HttpRequest,
+    db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
+    keys: Data<Keys>,
+) -> Result<Json<Vec<Car>>> {
+    let claims = get_claims(&req, &jwt_cfg.secret).await?;
+    let mut contact_id = claims.sub;
+    contact_id.decode(keys.contacts);
+    let conn = &mut retrieve_connection(db_pool).await?;
+    let mut results = cars::get_by_contact_id(contact_id, conn)
+        .await
+        .map_err(from_diesel_error())?;
+    results
+        .iter_mut()
+        .for_each(|r| r.contact.id.encode(keys.contacts));
     Ok(Json(results))
 }
 
 #[get("/{vin}")]
-pub async fn get_by_vin(path: Path<String>, db_pool: Data<DbPool>) -> Result<Json<Car>> {
+pub async fn get_by_vin(
+    path: Path<String>,
+    db_pool: Data<DbPool>,
+    keys: Data<Keys>,
+) -> Result<Json<Car>> {
     let vin = path.into_inner();
     let conn = &mut retrieve_connection(db_pool).await?;
-    let result = cars::get_by_vin(vin, conn)
+    let mut result = cars::get_by_vin(vin, conn)
         .await
         .map_err(from_diesel_error())?;
+    result.contact.id.encode(keys.contacts);
     Ok(Json(result))
 }
 
