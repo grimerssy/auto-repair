@@ -1,8 +1,9 @@
 use super::{check_if_admin, get_claims, retrieve_connection, Result};
 use crate::{
-    data::{contacts, orders, DbPool},
+    data::{cars, contacts, orders, DbPool},
     errors::map::from_diesel_error,
     models::{
+        car::InsertCar,
         contact::InsertContact,
         id::{keys::Keys, Id},
         order::{InsertOrder, Order},
@@ -35,11 +36,14 @@ pub async fn get_available_time(
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRequest {
+    service_id: Id,
     phone_number: String,
     email: Option<String>,
-    specialty_id: Id,
-    start_time: String,
     car_vin: String,
+    car_make: String,
+    car_model: String,
+    car_year: i16,
+    start_time: String,
 }
 
 #[post("")]
@@ -53,14 +57,36 @@ pub async fn create(
     conn.build_transaction()
         .run::<(), DieselError, _>(|conn| {
             Box::pin(async move {
+                let mut service_id = req_body.service_id;
+                service_id.decode(keys.services);
                 let insert_contact = InsertContact {
                     phone_number: req_body.phone_number.clone(),
                     email: req_body.email.clone(),
                 };
-                let _ = contacts::upsert_returning_id(insert_contact, conn).await?;
+                let contact_id = contacts::upsert_returning_id(insert_contact, conn).await?;
 
-                let mut specialty_id = req_body.specialty_id;
-                specialty_id.decode(keys.specialties);
+                let car_result = cars::get_by_vin(req_body.car_vin.clone(), conn).await;
+                if let Ok(car) = car_result {
+                    if car.contact.id != contact_id
+                        || car.make != req_body.car_make.clone()
+                        || car.model != req_body.car_model.clone()
+                        || car.year != req_body.car_year
+                    {
+                        return Err(diesel::result::Error::RollbackTransaction);
+                    }
+                } else {
+                    let car = InsertCar {
+                        contact_id,
+                        vin: req_body.car_vin.clone(),
+                        make: req_body.car_make.clone(),
+                        model: req_body.car_model.clone(),
+                        year: req_body.car_year,
+                    };
+                    cars::insert(car, conn).await?;
+                }
+
+                let specialty_id =
+                    orders::get_specialty_id(service_id, req_body.start_time.clone(), conn).await?;
 
                 let order = InsertOrder {
                     specialty_id,
@@ -160,14 +186,36 @@ pub async fn update_by_id(
     conn.build_transaction()
         .run::<(), DieselError, _>(|conn| {
             Box::pin(async move {
+                let mut service_id = req_body.service_id;
+                service_id.decode(keys.services);
                 let insert_contact = InsertContact {
                     phone_number: req_body.phone_number.clone(),
                     email: req_body.email.clone(),
                 };
-                let _ = contacts::upsert_returning_id(insert_contact, conn).await?;
+                let contact_id = contacts::upsert_returning_id(insert_contact, conn).await?;
 
-                let mut specialty_id = req_body.specialty_id;
-                specialty_id.decode(keys.specialties);
+                let car_result = cars::get_by_vin(req_body.car_vin.clone(), conn).await;
+                if let Ok(car) = car_result {
+                    if car.contact.id != contact_id
+                        || car.make != req_body.car_make.clone()
+                        || car.model != req_body.car_model.clone()
+                        || car.year != req_body.car_year
+                    {
+                        return Err(diesel::result::Error::RollbackTransaction);
+                    }
+                } else {
+                    let car = InsertCar {
+                        contact_id,
+                        vin: req_body.car_vin.clone(),
+                        make: req_body.car_make.clone(),
+                        model: req_body.car_model.clone(),
+                        year: req_body.car_year,
+                    };
+                    cars::insert(car, conn).await?;
+                }
+
+                let specialty_id =
+                    orders::get_specialty_id(service_id, req_body.start_time.clone(), conn).await?;
 
                 let order = InsertOrder {
                     specialty_id,

@@ -5,6 +5,9 @@ use std::fmt::Display;
 pub fn from_diesel_error() -> impl Fn(DieselError) -> Error {
     |e| match e {
         DieselError::NotFound => Error::NotFound,
+        DieselError::RollbackTransaction => {
+            Error::BadRequest("operation is denied due to invalid input".into())
+        }
         DieselError::InvalidCString(_) => {
             Error::BadRequest("string contains null character".into())
         }
