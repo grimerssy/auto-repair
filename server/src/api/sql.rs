@@ -36,7 +36,7 @@ pub async fn do_sql(
     let mut query = req_body.query.clone();
     let query_split = query.split(' ').collect::<Vec<&str>>();
     let conn = &mut retrieve_connection(db_pool).await?;
-    if query_split[0] == "select" {
+    if query_split[0].to_lowercase() == "select" {
         let mut chars = query.chars();
         if chars.next_back().unwrap() == ';' {
             query = chars.as_str().to_owned();
