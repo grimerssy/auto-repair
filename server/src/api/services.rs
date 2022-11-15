@@ -13,7 +13,7 @@ use crate::{
 };
 use actix_web::{
     delete, get, post, put,
-    web::{Data, Json, Path},
+    web::{Data, Json, Path, Query},
     HttpRequest, HttpResponse,
 };
 use serde::Deserialize;
@@ -46,38 +46,51 @@ pub async fn create(
         .map_err(from_diesel_error())
 }
 
-#[post("/specialties/{worker_id}/{service_id}")]
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AddForWorkerRequest {
+    worker_id: Id,
+    service_id: Id,
+}
+
+#[post("/specialties/query")]
 pub async fn add_for_worker(
     req: HttpRequest,
-    path: Path<(Id, Id)>,
+    query: Query<AddForWorkerRequest>,
     db_pool: Data<DbPool>,
     keys: Data<Keys>,
     jwt_cfg: Data<JwtCfg>,
 ) -> Result<HttpResponse> {
     check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
-    let (mut worker_id, mut service_id) = path.into_inner();
-    worker_id.decode(keys.workers);
-    service_id.decode(keys.services);
+    let mut query = query.into_inner();
+    query.worker_id.decode(keys.workers);
+    query.service_id.decode(keys.services);
     let conn = &mut retrieve_connection(db_pool).await?;
-    services::add_to_worker(worker_id, service_id, conn)
+    services::add_to_worker(query.worker_id, query.service_id, conn)
         .await
         .map(|_| HttpResponse::Created().finish())
         .map_err(from_diesel_error())
 }
 
-#[get("/specialties/{worker_id}")]
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GetForWorkerRequest {
+    worker_id: Id,
+}
+
+#[get("/specialties/query")]
 pub async fn get_for_worker(
     req: HttpRequest,
-    path: Path<Id>,
+    query: Query<GetForWorkerRequest>,
     db_pool: Data<DbPool>,
     keys: Data<Keys>,
     jwt_cfg: Data<JwtCfg>,
 ) -> Result<Json<Vec<Service>>> {
     check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
-    let mut worker_id = path.into_inner();
-    worker_id.decode(keys.workers);
+    let mut query = query.into_inner();
+    query.worker_id.decode(keys.workers);
     let conn = &mut retrieve_connection(db_pool).await?;
-    let mut results = services::get_for_worker(worker_id, conn)
+    let mut results = services::get_for_worker(query.worker_id, conn)
         .await
         .map_err(from_diesel_error())?;
     results.iter_mut().for_each(|r| r.id.encode(keys.services));
@@ -108,15 +121,19 @@ pub async fn get_by_id(
     Ok(Json(result))
 }
 
-#[get("/title/{title}")]
+#[derive(Deserialize)]
+pub struct GetByTitleRequest {
+    title: String,
+}
+
+#[get("/search/title")]
 pub async fn get_by_title(
-    path: Path<String>,
+    query: Query<GetByTitleRequest>,
     db_pool: Data<DbPool>,
     keys: Data<Keys>,
 ) -> Result<Json<Vec<Service>>> {
-    let title = path.into_inner();
     let conn = &mut retrieve_connection(db_pool).await?;
-    let mut results = services::get_by_title(title, conn)
+    let mut results = services::get_by_title(query.into_inner().title, conn)
         .await
         .map_err(from_diesel_error())?;
     results.iter_mut().for_each(|r| r.id.encode(keys.services));
@@ -174,20 +191,27 @@ pub async fn delete_by_id(
         .map_err(from_diesel_error())
 }
 
-#[delete("/specialties/{worker_id}/{service_id}")]
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DeleteForWorkerRequest {
+    worker_id: Id,
+    service_id: Id,
+}
+
+#[delete("/specialties/query")]
 pub async fn remove_for_worker(
     req: HttpRequest,
-    path: Path<(Id, Id)>,
+    query: Query<DeleteForWorkerRequest>,
     db_pool: Data<DbPool>,
     jwt_cfg: Data<JwtCfg>,
     keys: Data<Keys>,
 ) -> Result<HttpResponse> {
     check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
-    let (mut worker_id, mut service_id) = path.into_inner();
-    worker_id.decode(keys.workers);
-    service_id.decode(keys.services);
+    let mut query = query.into_inner();
+    query.worker_id.decode(keys.workers);
+    query.service_id.decode(keys.services);
     let conn = &mut retrieve_connection(db_pool).await?;
-    services::remove_for_worker(worker_id, service_id, conn)
+    services::remove_for_worker(query.worker_id, query.service_id, conn)
         .await
         .map(|_| HttpResponse::Ok().finish())
         .map_err(from_diesel_error())
