@@ -16,8 +16,11 @@ pub fn configuration(cfg: &mut web::ServiceConfig) {
                     .service(cars::get_all)
                     .service(cars::get_for_self)
                     .service(cars::get_by_vin)
+                    .service(cars::get_by_vin_for_self)
                     .service(cars::update_by_vin)
-                    .service(cars::delete_by_vin),
+                    .service(cars::update_by_vin_for_self)
+                    .service(cars::delete_by_vin)
+                    .service(cars::delete_by_vin_for_self),
             )
             .service(
                 web::scope("/contacts")

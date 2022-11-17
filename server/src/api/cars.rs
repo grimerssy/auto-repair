@@ -115,12 +115,35 @@ pub async fn get_for_self(
     Ok(Json(results))
 }
 
-#[get("/{vin}")]
-pub async fn get_by_vin(
+#[get("/self/{vin}")]
+pub async fn get_by_vin_for_self(
+    req: HttpRequest,
     path: Path<String>,
     db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
     keys: Data<Keys>,
 ) -> Result<Json<Car>> {
+    let claims = get_claims(&req, &jwt_cfg.secret).await?;
+    let mut contact_id = claims.sub;
+    contact_id.decode(keys.contacts);
+    let vin = path.into_inner();
+    let conn = &mut retrieve_connection(db_pool).await?;
+    let mut result = cars::get_by_vin_for_self(vin, contact_id, conn)
+        .await
+        .map_err(from_diesel_error())?;
+    result.contact.id.encode(keys.contacts);
+    Ok(Json(result))
+}
+
+#[get("/{vin}")]
+pub async fn get_by_vin(
+    req: HttpRequest,
+    path: Path<String>,
+    db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
+    keys: Data<Keys>,
+) -> Result<Json<Car>> {
+    check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
     let vin = path.into_inner();
     let conn = &mut retrieve_connection(db_pool).await?;
     let mut result = cars::get_by_vin(vin, conn)
@@ -137,6 +160,33 @@ pub struct UpdateRequest {
     make: String,
     model: String,
     year: i16,
+}
+
+#[put("/self/{vin}")]
+pub async fn update_by_vin_for_self(
+    req: HttpRequest,
+    path: Path<String>,
+    req_body: Json<UpdateRequest>,
+    db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
+    keys: Data<Keys>,
+) -> Result<HttpResponse> {
+    let claims = get_claims(&req, &jwt_cfg.secret).await?;
+    let mut contact_id = claims.sub;
+    contact_id.decode(keys.contacts);
+    let vin = path.into_inner();
+    let conn = &mut retrieve_connection(db_pool).await?;
+    let service = InsertCar {
+        vin: req_body.vin.clone(),
+        make: req_body.make.clone(),
+        model: req_body.model.clone(),
+        year: req_body.year,
+        contact_id,
+    };
+    cars::update_by_vin_for_self(vin, service, conn)
+        .await
+        .map(|_| HttpResponse::Ok().finish())
+        .map_err(from_diesel_error())
 }
 
 #[put("/{vin}")]
@@ -158,6 +208,25 @@ pub async fn update_by_vin(
         contact_id: Id::Raw(0),
     };
     cars::update_by_vin(vin, service, conn)
+        .await
+        .map(|_| HttpResponse::Ok().finish())
+        .map_err(from_diesel_error())
+}
+
+#[delete("/self/{vin}")]
+pub async fn delete_by_vin_for_self(
+    req: HttpRequest,
+    path: Path<String>,
+    db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
+    keys: Data<Keys>,
+) -> Result<HttpResponse> {
+    let claims = get_claims(&req, &jwt_cfg.secret).await?;
+    let mut contact_id = claims.sub;
+    contact_id.decode(keys.contacts);
+    let vin = path.into_inner();
+    let conn = &mut retrieve_connection(db_pool).await?;
+    cars::delete_by_vin_for_self(vin, contact_id, conn)
         .await
         .map(|_| HttpResponse::Ok().finish())
         .map_err(from_diesel_error())
