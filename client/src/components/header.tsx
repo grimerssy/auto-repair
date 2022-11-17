@@ -62,7 +62,7 @@ const Header = () => {
                 },
               }}
             >
-              edit contact
+              your account
             </Typography>
           </Link>
           <Link to="/cars">
@@ -77,7 +77,7 @@ const Header = () => {
                 },
               }}
             >
-              manage cars
+              your cars
             </Typography>
           </Link>
         </>
