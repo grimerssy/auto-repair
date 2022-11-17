@@ -53,15 +53,15 @@ const Orders = () => {
               title={"Phone number: "}
               value={o.contact.phoneNumber}
             />
-            {o.contact.email ? (
-              <CustomGrid title={"Email: "} value={o.contact.email} />
+            {o.car.contact.email ? (
+              <CustomGrid title={"Email: "} value={o.car.contact.email} />
             ) : null}
             <Typography sx={{ mt: 4, mb: 2 }} variant="h5">
               Car
             </Typography>
-            <CustomGrid title={"Make: "} value={o.carMake} />
-            <CustomGrid title={"Model: "} value={o.carModel} />
-            <CustomGrid title={"Year: "} value={o.carYear.toString()} />
+            <CustomGrid title={"Make: "} value={o.car.make} />
+            <CustomGrid title={"Model: "} value={o.car.model} />
+            <CustomGrid title={"Year: "} value={o.car.year.toString()} />
           </Box>
         </Grid>
       ))}

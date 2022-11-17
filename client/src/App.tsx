@@ -15,6 +15,12 @@ import AdminEditService from "./pages/admin/services/edit";
 import AdminEditOrder from "./pages/admin/orders/edit";
 import AdminEditContact from "./pages/admin/contacts/edit";
 import EditContact from "./pages/admin/contacts/editSelf";
+import AddCarSelf from "./pages/cars/add";
+import EditCarSelf from "./pages/cars/edit";
+import TableCarsSelf from "./pages/cars/table";
+import AddCar from "./pages/admin/cars/add";
+import EditCar from "./pages/admin/cars/edit";
+import CarsTable from "./pages/admin/cars/table";
 
 function App() {
   return (
@@ -36,6 +42,12 @@ function App() {
         <Route path="/admin/services" element={<Services />} />
         <Route path="/admin/services/add" element={<AdminAddService />} />
         <Route path="/admin/services/edit/:id" element={<AdminEditService />} />
+        <Route path="/cars/add" element={<AddCarSelf />} />
+        <Route path="/cars/edit/:vin" element={<EditCarSelf />} />
+        <Route path="/cars" element={<TableCarsSelf />} />
+        <Route path="/admin/cars/add" element={<AddCar />} />
+        <Route path="/admin/cars/edit/:vin" element={<EditCar />} />
+        <Route path="/admin/cars" element={<CarsTable />} />
       </Routes>
     </>
   );

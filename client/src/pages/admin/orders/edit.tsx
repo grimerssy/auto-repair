@@ -9,21 +9,33 @@ const EditOrder = () => {
   const { id } = useParams();
   const [order, setOrder] = useState<Order>({
     id: "",
-    contact: {
-      id: "",
-      phoneNumber: "",
-      email: null,
-    },
     service: {
       id: "",
       title: "",
       price: 0,
       duration: "",
     },
+    worker: {
+      id: "",
+      firstName: "",
+      middleName: null,
+      lastName: "",
+      dateOfBirth: "",
+      startTime: "",
+      endTime: "",
+    },
+    car: {
+      vin: "",
+      contact: {
+        id: "",
+        phoneNumber: "",
+        email: null,
+      },
+      make: "",
+      model: "",
+      year: 0,
+    },
     startTime: "",
-    carMake: "",
-    carModel: "",
-    carYear: 0,
   });
 
   useEffect(() => {
@@ -40,7 +52,7 @@ const EditOrder = () => {
       <Box
         sx={{
           p: 4,
-          mt: 4,
+          my: 4,
           width: 0.6,
           bgcolor: "secondary.main",
           borderRadius: 2,

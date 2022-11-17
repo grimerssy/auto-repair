@@ -21,6 +21,144 @@ export const executeSql = async (query: string) => {
   return "An error occurred, try again later";
 };
 
+export const createCar = (car: {
+  vin: string;
+  make: string;
+  model: string;
+  year: number;
+}) => {
+  const url = baseUrl + "/cars";
+  return fetch(url, {
+    method: "POST",
+    body: JSON.stringify(car),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+};
+
+export const createCarForSelf = (car: {
+  vin: string;
+  make: string;
+  model: string;
+  year: number;
+}) => {
+  const url = baseUrl + "/cars/self";
+  return fetch(url, {
+    method: "POST",
+    body: JSON.stringify(car),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+};
+
+export const updateCarByVin = (
+  vin: string,
+  car: {
+    vin: string;
+    make: string;
+    model: string;
+    year: number;
+  }
+) => {
+  const url = baseUrl + "/cars/" + vin;
+  return fetch(url, {
+    method: "PUT",
+    body: JSON.stringify(car),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+};
+
+export const updateCarForSelf = (
+  vin: string,
+  car: {
+    vin: string;
+    make: string;
+    model: string;
+    year: number;
+  }
+) => {
+  const url = baseUrl + "/cars/self/" + vin;
+  return fetch(url, {
+    method: "PUT",
+    body: JSON.stringify(car),
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+};
+
+export const getCarByVin = async (vin: string) => {
+  const url = baseUrl + "/cars/" + vin;
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+  return await res.json();
+};
+
+export const getCarByVinForSelf = async (vin: string) => {
+  const url = baseUrl + "/cars/self/" + vin;
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+  return await res.json();
+};
+
+export const getAllCars = async () => {
+  const url = baseUrl + "/cars";
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+  return await res.json();
+};
+
+export const getCarsForSelf = async () => {
+  const url = baseUrl + "/cars/self";
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+  return await res.json();
+};
+
+export const deleteCarByVin = (vin: string) => {
+  const url = baseUrl + "/cars/" + vin;
+  return fetch(url, {
+    method: "DELETE",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+};
+
+export const deleteCarForSelf = (vin: string) => {
+  const url = baseUrl + "/cars/self/" + vin;
+  return fetch(url, {
+    method: "DELETE",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+};
+
 export const getAllContacts = async () => {
   const url = baseUrl + "/contacts";
   const res = await fetch(url, {
@@ -154,6 +292,12 @@ export const getAllServices = async () => {
   return await res.json();
 };
 
+export const searchService = async (title: string) => {
+  const url = baseUrl + "/services/search/title?title=" + title;
+  const res = await fetch(url);
+  return await res.json();
+};
+
 export const getService = async (id: string) => {
   const url = baseUrl + "/services/" + id;
   const res = await fetch(url);
@@ -189,19 +333,26 @@ export const deleteServiceById = (id: string) => {
   });
 };
 
-export const postOrder = (order: {
+export const getAvailableTime = async (serviceId: string) => {
+  const url = baseUrl + "/orders/service/time/" + serviceId;
+  const res = await fetch(url);
+  return await res.json();
+};
+
+export const postOrder = (info: {
   serviceId: string;
   phoneNumber: string;
   email: string | null;
-  startTime: string;
+  carVin: string;
   carMake: string;
   carModel: string;
   carYear: number;
+  startTime: string;
 }) => {
   const url = baseUrl + "/orders";
   return fetch(url, {
     method: "POST",
-    body: JSON.stringify(order),
+    body: JSON.stringify(info),
     headers: {
       "Content-Type": "application/json",
     },
@@ -213,10 +364,11 @@ export const updateOrder = (order: {
   serviceId: string;
   phoneNumber: string;
   email: string | null;
-  startTime: string;
+  carVin: string;
   carMake: string;
   carModel: string;
   carYear: number;
+  startTime: string;
 }) => {
   const url = baseUrl + "/orders/update/" + order.id;
   return fetch(url, {

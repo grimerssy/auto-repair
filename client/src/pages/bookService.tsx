@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { getService } from "../api/api";
+import Book from "../components/book";
 import BookNoAuth from "../components/bookNoAuth";
 import { Box, Grid, Typography } from "@mui/material";
 import { Service } from "models";
@@ -28,7 +29,7 @@ const BookService = () => {
       <Box
         sx={{
           p: 4,
-          mt: 4,
+          my: 4,
           width: 0.6,
           bgcolor: "secondary.main",
           borderRadius: 2,
@@ -59,7 +60,11 @@ const BookService = () => {
                 </Typography>
               </Grid>
             </Grid>
-            <BookNoAuth serviceId={service.id} />
+            {localStorage.getItem("accessToken") ? (
+              <Book serviceId={service.id} />
+            ) : (
+              <BookNoAuth serviceId={service.id} />
+            )}
           </>
         )}
       </Box>

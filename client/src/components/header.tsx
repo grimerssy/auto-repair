@@ -49,21 +49,38 @@ const Header = () => {
         </Link>
       ) : null}
       {token ? (
-        <Link to="/contacts/edit">
-          <Typography
-            variant="button"
-            sx={{
-              fontSize: 16,
-              borderRadius: 2,
-              color: "secondary.main",
-              "&:hover": {
-                color: "primary.main",
-              },
-            }}
-          >
-            edit contact
-          </Typography>
-        </Link>
+        <>
+          <Link to="/contacts/edit">
+            <Typography
+              variant="button"
+              sx={{
+                fontSize: 16,
+                borderRadius: 2,
+                color: "secondary.main",
+                "&:hover": {
+                  color: "primary.main",
+                },
+              }}
+            >
+              edit contact
+            </Typography>
+          </Link>
+          <Link to="/cars">
+            <Typography
+              variant="button"
+              sx={{
+                fontSize: 16,
+                borderRadius: 2,
+                color: "secondary.main",
+                "&:hover": {
+                  color: "primary.main",
+                },
+              }}
+            >
+              manage cars
+            </Typography>
+          </Link>
+        </>
       ) : null}
       <Link to={token ? location.pathname : "/auth/login"}>
         <Typography

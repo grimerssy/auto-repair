@@ -41,6 +41,21 @@ const AdminPanel = () => {
               alignItems: "center",
             }}
           >
+            <Link to="/admin/cars">
+              <Typography align="center" variant="button">
+                cars
+              </Typography>
+            </Link>
+          </Grid>
+          <Grid
+            item
+            xs={4}
+            sx={{
+              display: "flex",
+              justifyContent: "space-around",
+              alignItems: "center",
+            }}
+          >
             <Link to="/admin/services">
               <Typography align="center" variant="button">
                 services

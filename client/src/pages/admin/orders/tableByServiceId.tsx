@@ -91,11 +91,11 @@ const OrdersByService = () => {
                       {orders.map((o, i) => (
                         <TableRow key={i}>
                           <TableCell>{o.startTime}</TableCell>
-                          <TableCell>{o.contact.phoneNumber}</TableCell>
-                          <TableCell>{o.contact.email}</TableCell>
-                          <TableCell>{o.carMake}</TableCell>
-                          <TableCell>{o.carModel}</TableCell>
-                          <TableCell>{o.carYear}</TableCell>
+                          <TableCell>{o.car.contact.phoneNumber}</TableCell>
+                          <TableCell>{o.car.contact.email}</TableCell>
+                          <TableCell>{o.car.make}</TableCell>
+                          <TableCell>{o.car.model}</TableCell>
+                          <TableCell>{o.car.year}</TableCell>
                           <TableCell>
                             <Link to={"/admin/orders/edit/" + o.id}>
                               <button>📝</button>
