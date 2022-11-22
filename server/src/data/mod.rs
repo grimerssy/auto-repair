@@ -5,6 +5,8 @@ pub mod services;
 pub mod users;
 pub mod workers;
 
+pub mod reports;
+
 use diesel_async::{
     pooled_connection::{
         deadpool::{Object, Pool},

@@ -61,6 +61,13 @@ pub fn configuration(cfg: &mut web::ServiceConfig) {
                     .service(workers::update_by_id)
                     .service(workers::delete_by_id),
             )
+            .service(
+                web::scope("/reports")
+                    .service(reports::get_most_profitable_services_for_month)
+                    .service(reports::get_most_valuable_clients_for_month)
+                    .service(reports::get_most_frequent_cars_for_month)
+                    .service(reports::get_total_work_hours_for_month),
+            )
             .service(web::scope("/sql").service(sql::do_sql)),
     );
 }

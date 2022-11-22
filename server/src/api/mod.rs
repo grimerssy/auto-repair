@@ -1,6 +1,7 @@
 pub mod cars;
 pub mod contacts;
 pub mod orders;
+pub mod reports;
 pub mod services;
 pub mod sql;
 pub mod users;

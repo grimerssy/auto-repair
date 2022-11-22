@@ -8,3 +8,5 @@ pub mod order;
 pub mod service;
 pub mod user;
 pub mod worker;
+
+pub mod report_data;
