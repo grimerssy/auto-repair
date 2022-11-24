@@ -1,3 +1,4 @@
+use core::fmt;
 use diesel::{
     deserialize::{self, FromSql, FromSqlRow},
     expression::AsExpression,
@@ -11,6 +12,13 @@ use std::ops::{Add, AddAssign, Sub, SubAssign};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, AsExpression, FromSqlRow)]
 #[diesel(sql_type = sql_types::Money)]
 pub struct Money(i64);
+
+impl fmt::Display for Money {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0 as f32 / 100_f32)?;
+        Ok(())
+    }
+}
 
 impl FromSql<sql_types::Money, Pg> for Money {
     fn from_sql(bytes: PgValue<'_>) -> deserialize::Result<Self> {
