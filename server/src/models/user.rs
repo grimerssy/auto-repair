@@ -3,7 +3,7 @@ use serde::Serialize;
 
 use super::{contact::Contact, id::Id};
 
-#[derive(Queryable, Serialize)]
+#[derive(Queryable, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct RawUser {
     pub contact_id: Id,
@@ -16,7 +16,7 @@ pub struct RawUser {
     pub registered_at: String,
 }
 
-#[derive(Queryable, Serialize)]
+#[derive(Queryable, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
     pub contact: Contact,

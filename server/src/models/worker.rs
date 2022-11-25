@@ -3,7 +3,7 @@ use serde::Serialize;
 
 use super::id::Id;
 
-#[derive(Queryable, Serialize)]
+#[derive(Queryable, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Worker {
     pub id: Id,

@@ -3,7 +3,7 @@ use serde::Serialize;
 
 use super::{car::Car, id::Id, service::Service, worker::Worker};
 
-#[derive(Queryable)]
+#[derive(Queryable, Serialize, Clone)]
 pub struct RawOrder {
     pub id: Id,
     pub service_id: i32,
@@ -12,7 +12,7 @@ pub struct RawOrder {
     pub start_time: String,
 }
 
-#[derive(Queryable, Serialize)]
+#[derive(Queryable, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Order {
     pub id: Id,
