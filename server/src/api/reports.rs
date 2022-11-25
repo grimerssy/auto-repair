@@ -114,7 +114,7 @@ pub async fn get_pdf_report(
         .element(genpdf::elements::Paragraph::new("Order count"))
         .push()
         .unwrap();
-    clients.into_iter().for_each(|c| {
+    clients.clone().into_iter().for_each(|c| {
         table
             .row()
             .element(genpdf::elements::Paragraph::new(c.phone_number))
@@ -122,6 +122,39 @@ pub async fn get_pdf_report(
                 c.email.unwrap_or_else(|| "".into()),
             ))
             .element(genpdf::elements::Paragraph::new(c.order_count.to_string()))
+            .push()
+            .unwrap();
+    });
+    doc.push(table);
+    doc.push(genpdf::elements::Break::new(2));
+    doc.push(genpdf::elements::Paragraph::new("Additional data: "));
+    doc.push(genpdf::elements::Break::new(1));
+    let mut table = genpdf::elements::TableLayout::new(vec![1, 1, 1, 1, 1]);
+    table
+        .row()
+        .element(genpdf::elements::Paragraph::new("Phone number"))
+        .element(genpdf::elements::Paragraph::new("First name"))
+        .element(genpdf::elements::Paragraph::new("Middle name"))
+        .element(genpdf::elements::Paragraph::new("Last name"))
+        .element(genpdf::elements::Paragraph::new("Date of birth"))
+        .push()
+        .unwrap();
+    clients.into_iter().for_each(|c| {
+        table
+            .row()
+            .element(genpdf::elements::Paragraph::new(c.phone_number))
+            .element(genpdf::elements::Paragraph::new(
+                c.first_name.unwrap_or_else(|| "".into()),
+            ))
+            .element(genpdf::elements::Paragraph::new(
+                c.middle_name.unwrap_or_else(|| "".into()),
+            ))
+            .element(genpdf::elements::Paragraph::new(
+                c.last_name.unwrap_or_else(|| "".into()),
+            ))
+            .element(genpdf::elements::Paragraph::new(
+                c.date_of_birth.unwrap_or_else(|| "".into()),
+            ))
             .push()
             .unwrap();
     });

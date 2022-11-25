@@ -35,12 +35,28 @@ having count(orders.id) >= (
 pub async fn get_most_valuable_clients_for_month(
     conn: &mut Connection,
 ) -> Result<Vec<ClientsReport>> {
-    sql_query(
+    sql_query(format!(
         r"
-select contacts.*, count(orders.id) as order_count from contacts
-inner join cars on cars.contact_id = contacts.id
-inner join orders on cars.vin = orders.car_vin
-group by contacts.id, contacts.phone_number, contacts.email
+select
+    contacts.*,
+    users.first_name,
+    users.middle_name,
+    users.last_name,
+    to_char(users.date_of_birth, '{}') as date_of_birth,
+    count(orders.id) as order_count
+from
+    contacts
+    left join users on contacts.id = users.contact_id
+    inner join cars on cars.contact_id = contacts.id
+    inner join orders on cars.vin = orders.car_vin
+group by
+    contacts.id,
+    contacts.phone_number,
+    contacts.email,
+    users.first_name,
+    users.middle_name,
+    users.last_name,
+    users.date_of_birth
 having count(orders.id) >= (
   select c from (
     select count(orders.id) as c from contacts
@@ -54,7 +70,8 @@ having count(orders.id) >= (
   limit 1
 );
 ",
-    )
+        super::date::FORMAT
+    ))
     .load::<ClientsReport>(conn)
     .await
 }
