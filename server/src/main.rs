@@ -56,16 +56,6 @@ async fn main() -> std::io::Result<()> {
             env::var("SERVICES_PRIME").unwrap().parse::<i32>().unwrap(),
             env::var("SERVICES_RANDOM").unwrap().parse::<i32>().unwrap(),
         ),
-        specialties: Key::new(
-            env::var("SPECIALTIES_PRIME")
-                .unwrap()
-                .parse::<i32>()
-                .unwrap(),
-            env::var("SPECIALTIES_RANDOM")
-                .unwrap()
-                .parse::<i32>()
-                .unwrap(),
-        ),
         workers: Key::new(
             env::var("WORKERS_PRIME").unwrap().parse::<i32>().unwrap(),
             env::var("WORKERS_RANDOM").unwrap().parse::<i32>().unwrap(),
