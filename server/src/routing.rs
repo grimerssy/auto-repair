@@ -39,7 +39,9 @@ pub fn configuration(cfg: &mut web::ServiceConfig) {
                     .service(orders::get_by_id)
                     .service(orders::get_by_service_id)
                     .service(orders::update_by_id)
-                    .service(orders::delete_by_id),
+                    .service(orders::delete_by_id)
+                    .service(orders::get_receipt)
+                    .service(orders::get_receipt_for_self),
             )
             .service(
                 web::scope("/services")

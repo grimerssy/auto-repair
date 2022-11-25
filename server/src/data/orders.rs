@@ -332,6 +332,46 @@ pub async fn get_by_id(id: Id, conn: &mut Connection) -> Result<Order> {
         .await
 }
 
+pub async fn get_vec_by_ids(ids: Vec<Id>, conn: &mut Connection) -> Result<Vec<Order>> {
+    use crate::schema::*;
+
+    orders::table
+        .inner_join(specialties::table.on(orders::specialty_id.eq(specialties::id)))
+        .inner_join(services::table.on(specialties::service_id.eq(services::id)))
+        .inner_join(workers::table.on(specialties::worker_id.eq(workers::id)))
+        .inner_join(cars::table.on(orders::car_vin.eq(cars::vin)))
+        .inner_join(contacts::table.on(cars::contact_id.eq(contacts::id)))
+        .select((
+            orders::id,
+            (
+                services::id,
+                services::title,
+                services::price,
+                services::duration,
+            ),
+            (
+                workers::id,
+                workers::first_name,
+                workers::middle_name,
+                workers::last_name,
+                date::to_char(workers::date_of_birth, date::FORMAT),
+                time::to_char(workers::start_time, time::FORMAT),
+                time::to_char(workers::end_time, time::FORMAT),
+            ),
+            (
+                cars::vin,
+                (contacts::id, contacts::phone_number, contacts::email),
+                cars::make,
+                cars::model,
+                cars::year,
+            ),
+            timestamp::to_char(orders::start_time, timestamp::FORMAT),
+        ))
+        .filter(orders::id.eq_any(ids))
+        .load::<Order>(conn)
+        .await
+}
+
 pub async fn update_by_id(id: Id, order: InsertOrder, conn: &mut Connection) -> Result<()> {
     use crate::schema::orders;
 

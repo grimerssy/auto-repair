@@ -1,7 +1,7 @@
 use super::{check_if_admin, get_claims, retrieve_connection, Result};
 use crate::{
     data::{cars, contacts, orders, DbPool},
-    errors::map::from_diesel_error,
+    errors::{map::from_diesel_error, Error},
     models::{
         car::InsertCar,
         contact::InsertContact,
@@ -12,7 +12,7 @@ use crate::{
 };
 use actix_web::{
     delete, get, post, put,
-    web::{Data, Json, Path},
+    web::{Data, Json, Path, Query},
     HttpRequest, HttpResponse,
 };
 use diesel::result::Error as DieselError;
@@ -246,4 +246,141 @@ pub async fn delete_by_id(
         .await
         .map(|_| HttpResponse::Ok().finish())
         .map_err(from_diesel_error())
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CheckRequest {
+    ids: String,
+}
+
+#[get("/self/receipt")]
+pub async fn get_receipt_for_self(
+    req: HttpRequest,
+    query: Query<CheckRequest>,
+    db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
+    keys: Data<Keys>,
+) -> Result<HttpResponse> {
+    let claims = get_claims(&req, &jwt_cfg.secret).await?;
+    let mut id = claims.sub;
+    id.decode(keys.contacts);
+    let mut ids = query
+        .into_inner()
+        .ids
+        .split(',')
+        .filter_map(|id| id.parse().ok())
+        .collect::<Vec<Id>>();
+    ids.iter_mut().for_each(|id| id.decode(keys.orders));
+    let conn = &mut retrieve_connection(db_pool).await?;
+    let results = orders::get_vec_by_ids(ids, conn)
+        .await
+        .map_err(from_diesel_error())?;
+    if results.is_empty() {
+        return Err(Error::NotFound);
+    }
+    for order in &results {
+        if order.car.contact.id != id {
+            return Err(Error::BadRequest(
+                "Requested order does not belong to sender".into(),
+            ));
+        }
+    }
+    Ok(HttpResponse::Ok()
+        .insert_header(("content-type", "application/pdf"))
+        .body(get_receipt_pdf(results)))
+}
+
+#[get("/admin/receipt")]
+pub async fn get_receipt(
+    req: HttpRequest,
+    query: Query<CheckRequest>,
+    db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
+    keys: Data<Keys>,
+) -> Result<HttpResponse> {
+    check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
+    let mut ids = query
+        .into_inner()
+        .ids
+        .split(',')
+        .filter_map(|id| id.parse().ok())
+        .collect::<Vec<Id>>();
+    ids.iter_mut().for_each(|id| id.decode(keys.orders));
+    let conn = &mut retrieve_connection(db_pool).await?;
+    let results = orders::get_vec_by_ids(ids, conn)
+        .await
+        .map_err(from_diesel_error())?;
+    if results.is_empty() {
+        return Err(Error::NotFound);
+    }
+    Ok(HttpResponse::Ok()
+        .insert_header(("content-type", "application/pdf"))
+        .body(get_receipt_pdf(results)))
+}
+
+fn get_receipt_pdf(data: Vec<Order>) -> Vec<u8> {
+    use genpdf::{elements, fonts, style};
+    let font_family = fonts::from_files("./assets/fonts/Roboto", "Roboto", None).unwrap();
+    let mut doc = genpdf::Document::new(font_family);
+    let mut decorator = genpdf::SimplePageDecorator::new();
+    decorator.set_margins(15);
+    doc.set_page_decorator(decorator);
+    doc.set_title("Check");
+    doc.set_line_spacing(1.5);
+    doc.set_font_size(14);
+    doc.push(elements::StyledElement::new(
+        elements::Paragraph::new("Check"),
+        style::Effect::Bold,
+    ));
+    doc.push(elements::Break::new(1));
+    doc.push(elements::Paragraph::new("Orders: "));
+    data.clone().into_iter().for_each(|o| {
+        doc.push(elements::Break::new(1));
+        doc.push(elements::StyledElement::new(
+            elements::Paragraph::new(format!("  {}", o.service.title.to_uppercase())),
+            style::Effect::Italic,
+        ));
+        doc.push(elements::Paragraph::new(format!(
+            "  price: {}",
+            o.service.price
+        )));
+        doc.push(elements::Paragraph::new(format!(
+            "  duration: {}",
+            o.service.duration
+        )));
+        doc.push(elements::Paragraph::new(format!(
+            "  start time: {}",
+            o.start_time
+        )));
+        doc.push(elements::Paragraph::new("  car:"));
+        doc.push(elements::Paragraph::new(format!("    vin: {}", o.car.vin)));
+        doc.push(elements::Paragraph::new(format!(
+            "    make: {}",
+            o.car.make
+        )));
+        doc.push(elements::Paragraph::new(format!(
+            "    model: {}",
+            o.car.model
+        )));
+        doc.push(elements::Paragraph::new(format!(
+            "    year: {}",
+            o.car.year
+        )));
+    });
+    doc.push(elements::Break::new(1));
+    doc.push(elements::StyledElement::new(
+        elements::Paragraph::new("Total price:"),
+        style::Effect::Bold,
+    ));
+    doc.push(elements::Paragraph::new(
+        data.into_iter()
+            .map(|o| o.service.price)
+            .reduce(|sum, p| sum + p)
+            .unwrap()
+            .to_string(),
+    ));
+    let mut buffer = vec![0; 1 << 24];
+    doc.render(buffer.as_mut_slice()).unwrap();
+    buffer
 }

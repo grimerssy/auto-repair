@@ -78,7 +78,7 @@ pub async fn get_pdf_report(
     db_pool: Data<DbPool>,
     jwt_cfg: Data<JwtCfg>,
 ) -> Result<HttpResponse> {
-    // check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
+    check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
     let conn = &mut retrieve_connection(db_pool).await?;
     let font_family = genpdf::fonts::from_files("./assets/fonts/Roboto", "Roboto", None).unwrap();
     let services = reports::get_most_profitable_services_for_month(conn)
