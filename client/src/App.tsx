@@ -8,7 +8,7 @@ import AdminOrders from "./pages/admin/orders";
 import OrdersByService from "./pages/admin/orders/tableByServiceId";
 import Contacts from "./pages/admin/contacts/table";
 import Services from "./pages/admin/services/table";
-import AdminPanel from "./pages/adminPanel";
+import AdminPanel from "./pages/admin/index";
 import SqlEdit from "./pages/admin/sql";
 import AdminAddService from "./pages/admin/services/add";
 import AdminEditService from "./pages/admin/services/edit";
@@ -21,6 +21,7 @@ import TableCarsSelf from "./pages/cars/table";
 import AddCar from "./pages/admin/cars/add";
 import EditCar from "./pages/admin/cars/edit";
 import CarsTable from "./pages/admin/cars/table";
+import ReportsPage from "./pages/admin/reports";
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
         <Route path="/admin/cars/add" element={<AddCar />} />
         <Route path="/admin/cars/edit/:vin" element={<EditCar />} />
         <Route path="/admin/cars" element={<CarsTable />} />
+        <Route path="/admin/reports" element={<ReportsPage />} />
       </Routes>
     </>
   );

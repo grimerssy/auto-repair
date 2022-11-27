@@ -431,3 +431,58 @@ export const deleteOrderById = (id: string) => {
     },
   });
 };
+
+export const getServicesReport = async () => {
+  const url = baseUrl + "/reports/services";
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+  return await res.json();
+};
+
+export const getClientsReport = async () => {
+  const url = baseUrl + "/reports/clients";
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+  return await res.json();
+};
+
+export const getCarsReport = async () => {
+  const url = baseUrl + "/reports/cars";
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+  return await res.json();
+};
+
+export const getHoursReport = async () => {
+  const url = baseUrl + "/reports/hours";
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+  return await res.json();
+};
+
+export const getPdfReport = async () => {
+  const url = baseUrl + "/reports/pdf";
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+  return await res.blob();
+};

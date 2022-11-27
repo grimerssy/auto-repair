@@ -29,6 +29,24 @@ const AdminPanel = () => {
           py: 8,
           borderRadius: 4,
           bgcolor: "secondary.main",
+          display: "flex",
+          justifyContent: "space-around",
+          alignItems: "center",
+        }}
+      >
+        <Link to="/admin/reports">
+          <Typography align="center" variant="button">
+            see monthly reports
+          </Typography>
+        </Link>
+      </Box>
+      <Box
+        sx={{
+          m: 6,
+          px: 4,
+          py: 8,
+          borderRadius: 4,
+          bgcolor: "secondary.main",
         }}
       >
         <Grid container spacing={4}>
