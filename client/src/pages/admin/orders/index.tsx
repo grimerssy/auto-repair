@@ -24,6 +24,12 @@ const Orders = () => {
       }}
     >
       <Grid container spacing={6}>
+        <Grid item xs={12}>
+          <Typography align="center" variant="h5">
+            {"Choose service or "}
+            <Link to="/admin/orders/all">view for all</Link>
+          </Typography>
+        </Grid>
         {services.map((s, i) => (
           <Grid key={i} item xs={4}>
             <Link to={"/admin/orders/" + s.id}>

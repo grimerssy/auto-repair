@@ -121,6 +121,30 @@ pub async fn get_all(
     Ok(Json(orders))
 }
 
+#[get("/self/all")]
+pub async fn get_all_for_self(
+    req: HttpRequest,
+    db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
+    keys: Data<Keys>,
+) -> Result<Json<Vec<Order>>> {
+    let claims = get_claims(&req, &jwt_cfg.secret).await?;
+    let mut contact_id = claims.sub;
+    contact_id.decode(keys.contacts);
+    let conn = &mut retrieve_connection(db_pool).await?;
+    let mut orders = orders::get_all_for_self(contact_id, conn)
+        .await
+        .map_err(from_diesel_error())?;
+    orders.iter_mut().for_each(|o| {
+        o.id.encode(keys.orders);
+        o.service.id.encode(keys.services);
+        o.worker.id.encode(keys.workers);
+        o.car.contact.id.encode(keys.contacts);
+    });
+
+    Ok(Json(orders))
+}
+
 #[get("/service/{service_id}")]
 pub async fn get_by_service_id(
     req: HttpRequest,
@@ -250,14 +274,37 @@ pub async fn delete_by_id(
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CheckRequest {
+pub struct IdArrayRequest {
     ids: String,
+}
+
+#[delete("")]
+pub async fn delete_by_ids(
+    req: HttpRequest,
+    query: Query<IdArrayRequest>,
+    db_pool: Data<DbPool>,
+    jwt_cfg: Data<JwtCfg>,
+    keys: Data<Keys>,
+) -> Result<HttpResponse> {
+    check_if_admin(get_claims(&req, &jwt_cfg.secret).await?)?;
+    let mut ids = query
+        .into_inner()
+        .ids
+        .split(',')
+        .filter_map(|id| id.parse().ok())
+        .collect::<Vec<Id>>();
+    ids.iter_mut().for_each(|id| id.decode(keys.orders));
+    let conn = &mut retrieve_connection(db_pool).await?;
+    orders::delete_by_ids(ids, conn)
+        .await
+        .map(|_| HttpResponse::Ok().finish())
+        .map_err(from_diesel_error())
 }
 
 #[get("/self/receipt")]
 pub async fn get_receipt_for_self(
     req: HttpRequest,
-    query: Query<CheckRequest>,
+    query: Query<IdArrayRequest>,
     db_pool: Data<DbPool>,
     jwt_cfg: Data<JwtCfg>,
     keys: Data<Keys>,
@@ -294,7 +341,7 @@ pub async fn get_receipt_for_self(
 #[get("/admin/receipt")]
 pub async fn get_receipt(
     req: HttpRequest,
-    query: Query<CheckRequest>,
+    query: Query<IdArrayRequest>,
     db_pool: Data<DbPool>,
     jwt_cfg: Data<JwtCfg>,
     keys: Data<Keys>,

@@ -52,7 +52,20 @@ const AdminPanel = () => {
         <Grid container spacing={4}>
           <Grid
             item
-            xs={4}
+            xs={12}
+            sx={{
+              display: "flex",
+              justifyContent: "space-around",
+              alignItems: "center",
+            }}
+          >
+            <Typography align="center" variant="button">
+              View data for:{" "}
+            </Typography>
+          </Grid>
+          <Grid
+            item
+            xs={3}
             sx={{
               display: "flex",
               justifyContent: "space-around",
@@ -67,7 +80,7 @@ const AdminPanel = () => {
           </Grid>
           <Grid
             item
-            xs={4}
+            xs={3}
             sx={{
               display: "flex",
               justifyContent: "space-around",
@@ -82,7 +95,7 @@ const AdminPanel = () => {
           </Grid>
           <Grid
             item
-            xs={4}
+            xs={3}
             sx={{
               display: "flex",
               justifyContent: "space-around",
@@ -97,7 +110,7 @@ const AdminPanel = () => {
           </Grid>
           <Grid
             item
-            xs={4}
+            xs={3}
             sx={{
               display: "flex",
               justifyContent: "space-around",

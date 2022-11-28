@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
-import { getAllOrdersForSelf, getReceiptByIdsForSelf } from "../api/api";
+import {
+  getAllOrders,
+  deleteOrderById,
+  deleteOrdersByIds,
+  getReceiptByIds,
+} from "../../../api/api";
 import {
   Box,
   Typography,
@@ -12,16 +17,34 @@ import {
   TableCell,
 } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
+import { Link } from "react-router-dom";
 import { Order } from "models";
 
-const Orders = () => {
+const OrdersByService = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [ids, setIds] = useState<string[]>([]);
   const [pdf, setPdf] = useState("");
+  const [isGroupDeleteLoading, setIsGroupDeleteLoading] = useState(false);
   const [checked, _] = useState<any>({});
 
+  const handleDelete = (id: string) => {
+    if (confirm("are you sure you want to delete this order?")) {
+      deleteOrderById(id);
+      window.location.reload();
+    }
+  };
+
+  const handleGroupDelete = () => {
+    setIsGroupDeleteLoading(true);
+    if (confirm("are you sure you want to delete these orders?")) {
+      deleteOrdersByIds(ids);
+      setIsGroupDeleteLoading(false);
+      window.location.reload();
+    }
+  };
+
   useEffect(() => {
-    getAllOrdersForSelf().then((data) => {
+    getAllOrders().then((data) => {
       setOrders(data);
     });
   }, []);
@@ -29,9 +52,7 @@ const Orders = () => {
     if (!ids.length) {
       return;
     }
-    getReceiptByIdsForSelf(ids).then((blob) =>
-      setPdf(URL.createObjectURL(blob))
-    );
+    getReceiptByIds(ids).then((blob) => setPdf(URL.createObjectURL(blob)));
   }, [ids]);
 
   return (
@@ -47,6 +68,15 @@ const Orders = () => {
               <Typography variant="h6" sx={{ m: 2 }}>
                 Orders
               </Typography>
+              <LoadingButton
+                type="submit"
+                variant="text"
+                loading={isGroupDeleteLoading}
+                disabled={isGroupDeleteLoading || !ids.length}
+                onClick={handleGroupDelete}
+              >
+                Delete selected
+              </LoadingButton>
               <a
                 href={ids.length ? pdf : "javascript: void(0)"}
                 target="_blank"
@@ -54,7 +84,7 @@ const Orders = () => {
                 <LoadingButton
                   type="submit"
                   variant="text"
-                  disabled={!ids.length}
+                  disabled={isGroupDeleteLoading || !ids.length}
                 >
                   Print receipt for selected
                 </LoadingButton>
@@ -74,6 +104,8 @@ const Orders = () => {
                     <TableCell>Car model</TableCell>
                     <TableCell>Car year</TableCell>
                     <TableCell>Worker</TableCell>
+                    <TableCell>Edit</TableCell>
+                    <TableCell>Delete</TableCell>
                     <TableCell>Select</TableCell>
                   </TableRow>
                 </TableHead>
@@ -99,7 +131,16 @@ const Orders = () => {
                           : o.worker.firstName + " " + o.worker.lastName}
                       </TableCell>
                       <TableCell>
+                        <Link to={"/admin/orders/edit/" + o.id}>
+                          <button>📝</button>
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <button onClick={() => handleDelete(o.id)}>❌</button>
+                      </TableCell>
+                      <TableCell>
                         <Checkbox
+                          disabled={isGroupDeleteLoading}
                           onClick={() => {
                             checked[o.id] = !checked[o.id];
                             setIds(
@@ -120,4 +161,4 @@ const Orders = () => {
   );
 };
 
-export default Orders;
+export default OrdersByService;

@@ -36,10 +36,12 @@ pub fn configuration(cfg: &mut web::ServiceConfig) {
                     .service(orders::get_available_time)
                     .service(orders::create)
                     .service(orders::get_all)
+                    .service(orders::get_all_for_self)
                     .service(orders::get_by_id)
                     .service(orders::get_by_service_id)
                     .service(orders::update_by_id)
                     .service(orders::delete_by_id)
+                    .service(orders::delete_by_ids)
                     .service(orders::get_receipt)
                     .service(orders::get_receipt_for_self),
             )

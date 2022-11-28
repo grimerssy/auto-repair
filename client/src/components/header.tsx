@@ -80,16 +80,30 @@ const Header = () => {
               your cars
             </Typography>
           </Link>
+          <Link to="/orders">
+            <Typography
+              variant="button"
+              sx={{
+                fontSize: 16,
+                borderRadius: 2,
+                color: "secondary.main",
+                "&:hover": {
+                  color: "primary.main",
+                },
+              }}
+            >
+              your orders
+            </Typography>
+          </Link>
         </>
       ) : null}
-      <Link to={token ? location.pathname : "/auth/login"}>
+      <Link to={token ? "" : "/auth/login"}>
         <Typography
           variant="button"
           onClick={
             token
               ? () => {
                 localStorage.removeItem("accessToken");
-                window.location.reload();
               }
               : () => { }
           }

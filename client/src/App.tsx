@@ -6,6 +6,8 @@ import Signup from "./pages/signup";
 import BookService from "./pages/bookService";
 import AdminOrders from "./pages/admin/orders";
 import OrdersByService from "./pages/admin/orders/tableByServiceId";
+import OrdersAll from "./pages/orders";
+import OrdersAdminAll from "./pages/admin/orders/tableAll";
 import Contacts from "./pages/admin/contacts/table";
 import Services from "./pages/admin/services/table";
 import AdminPanel from "./pages/admin/index";
@@ -37,12 +39,14 @@ function App() {
         <Route path="/services/:id" element={<BookService />} />
         <Route path="/admin/orders" element={<AdminOrders />} />
         <Route path="/admin/orders/:id" element={<OrdersByService />} />
+        <Route path="/admin/orders/all" element={<OrdersAdminAll />} />
         <Route path="/admin/orders/edit/:id" element={<AdminEditOrder />} />
         <Route path="/admin/contacts" element={<Contacts />} />
         <Route path="/admin/contacts/edit/:id" element={<AdminEditContact />} />
         <Route path="/admin/services" element={<Services />} />
         <Route path="/admin/services/add" element={<AdminAddService />} />
         <Route path="/admin/services/edit/:id" element={<AdminEditService />} />
+        <Route path="/orders" element={<OrdersAll />} />
         <Route path="/cars/add" element={<AddCarSelf />} />
         <Route path="/cars/edit/:vin" element={<EditCarSelf />} />
         <Route path="/cars" element={<TableCarsSelf />} />

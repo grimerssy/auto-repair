@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -17,6 +16,7 @@ import {
   TableRow,
   TableCell,
 } from "@mui/material";
+import { Link } from "react-router-dom";
 import { Order, Service } from "models";
 
 const OrdersByService = () => {
@@ -83,6 +83,7 @@ const OrdersByService = () => {
                         <TableCell>Car make</TableCell>
                         <TableCell>Car model</TableCell>
                         <TableCell>Car year</TableCell>
+                        <TableCell>Worker</TableCell>
                         <TableCell>Edit</TableCell>
                         <TableCell>Delete</TableCell>
                       </TableRow>
@@ -96,6 +97,15 @@ const OrdersByService = () => {
                           <TableCell>{o.car.make}</TableCell>
                           <TableCell>{o.car.model}</TableCell>
                           <TableCell>{o.car.year}</TableCell>
+                          <TableCell>
+                            {o.worker.middleName
+                              ? o.worker.firstName +
+                              " " +
+                              o.worker.middleName +
+                              " " +
+                              o.worker.lastName
+                              : o.worker.firstName + " " + o.worker.lastName}
+                          </TableCell>
                           <TableCell>
                             <Link to={"/admin/orders/edit/" + o.id}>
                               <button>📝</button>

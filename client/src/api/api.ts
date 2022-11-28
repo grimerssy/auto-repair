@@ -400,6 +400,17 @@ export const getAllOrders = async () => {
   return await res.json();
 };
 
+export const getAllOrdersForSelf = async () => {
+  const url = baseUrl + "/orders/self/all";
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+  return await res.json();
+};
+
 export const getOrderById = async (id: string) => {
   const url = baseUrl + "/orders/" + id;
   const res = await fetch(url, {
@@ -430,6 +441,38 @@ export const deleteOrderById = (id: string) => {
       Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
     },
   });
+};
+
+export const deleteOrdersByIds = (ids: string[]) => {
+  const url = baseUrl + "/orders?ids=" + ids.join(",");
+  return fetch(url, {
+    method: "DELETE",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+};
+
+export const getReceiptByIds = async (ids: string[]) => {
+  const url = baseUrl + "/orders/admin/receipt?ids=" + ids.join(",");
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+  return await res.blob();
+};
+
+export const getReceiptByIdsForSelf = async (ids: string[]) => {
+  const url = baseUrl + "/orders/self/receipt?ids=" + ids.join(",");
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
+    },
+  });
+  return await res.blob();
 };
 
 export const getServicesReport = async () => {
