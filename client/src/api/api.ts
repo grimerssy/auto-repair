@@ -333,6 +333,12 @@ export const deleteServiceById = (id: string) => {
   });
 };
 
+export const getPdfPriceList = async () => {
+  const url = baseUrl + "/services/priceList/pdf";
+  const res = await fetch(url);
+  return await res.blob();
+};
+
 export const getAvailableTime = async (serviceId: string) => {
   const url = baseUrl + "/orders/service/time/" + serviceId;
   const res = await fetch(url);
@@ -517,15 +523,4 @@ export const getHoursReport = async () => {
     },
   });
   return await res.json();
-};
-
-export const getPdfReport = async () => {
-  const url = baseUrl + "/reports/pdf";
-  const res = await fetch(url, {
-    method: "GET",
-    headers: {
-      Authorization: "Bearer " + localStorage.getItem("accessToken") || "",
-    },
-  });
-  return await res.blob();
 };

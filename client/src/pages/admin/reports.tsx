@@ -3,9 +3,8 @@ import {
   getClientsReport,
   getCarsReport,
   getHoursReport,
-  getPdfReport,
 } from "../../api/api";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Box,
   Button,
@@ -21,22 +20,11 @@ import {
 const Reports = () => {
   const [isInitial, setIsInitial] = useState(true);
   const [result, setResult] = useState<any[]>([]);
-  const [pdf, setPdf] = useState("");
-  useEffect(() => {
-    getPdfReport().then((blob) => setPdf(URL.createObjectURL(blob)));
-  }, []);
 
   return (
     <Box
       sx={{ my: 6, mx: 10, p: 4, borderRadius: 4, bgcolor: "secondary.main" }}
     >
-      <Box textAlign="center">
-        <a href={pdf} target="_blank">
-          <Button type="button" variant="text" sx={{ my: 4 }}>
-            print pdf report
-          </Button>
-        </a>
-      </Box>
       <Box sx={{ display: "flex", justifyContent: "space-around" }}>
         <Button
           type="button"

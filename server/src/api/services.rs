@@ -1,7 +1,7 @@
 use super::{check_if_admin, get_claims, retrieve_connection, Result};
 use crate::{
-    data::services,
     data::DbPool,
+    data::{services, sql_to_chrono_format, timestamp},
     errors::map::from_diesel_error,
     models::{
         id::{keys::Keys, Id},
@@ -16,6 +16,7 @@ use actix_web::{
     web::{Data, Json, Path, Query},
     HttpRequest, HttpResponse,
 };
+use genpdf::{elements, fonts, style};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -215,4 +216,45 @@ pub async fn remove_for_worker(
         .await
         .map(|_| HttpResponse::Ok().finish())
         .map_err(from_diesel_error())
+}
+
+#[get("/priceList/pdf")]
+pub async fn get_price_list_pdf(db_pool: Data<DbPool>) -> Result<HttpResponse> {
+    let conn = &mut retrieve_connection(db_pool).await?;
+    let results = services::get_all(conn).await.map_err(from_diesel_error())?;
+    let font_family = fonts::from_files("./assets/fonts/Roboto", "Roboto", None).unwrap();
+    let mut doc = genpdf::Document::new(font_family);
+    let mut decorator = genpdf::SimplePageDecorator::new();
+    decorator.set_margins(15);
+    doc.set_page_decorator(decorator);
+    doc.set_title("Price list");
+    doc.set_line_spacing(1.5);
+    doc.set_font_size(14);
+    doc.push(elements::StyledElement::new(
+        elements::Paragraph::new(format!(
+            "Price list for {}",
+            chrono::offset::Utc::now()
+                .naive_utc()
+                .format(&sql_to_chrono_format(timestamp::FORMAT))
+        )),
+        style::Effect::Bold,
+    ));
+    doc.push(elements::Break::new(1));
+    results.into_iter().for_each(|s| {
+        doc.push(elements::StyledElement::new(
+            elements::Paragraph::new(s.title.to_uppercase()),
+            style::Effect::Italic,
+        ));
+        doc.push(elements::Paragraph::new(format!("Price: {}", s.price)));
+        doc.push(elements::Paragraph::new(format!(
+            "Duration: {}",
+            s.duration
+        )));
+        doc.push(elements::Break::new(1));
+    });
+    let mut buffer = vec![0; 1 << 24];
+    doc.render(buffer.as_mut_slice()).unwrap();
+    Ok(HttpResponse::Ok()
+        .insert_header(("content-type", "application/pdf"))
+        .body(buffer))
 }
