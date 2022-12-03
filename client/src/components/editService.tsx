@@ -56,7 +56,7 @@ const EditService = ({ service }: props) => {
           required
           value={title}
           error={!isTitleValid}
-          onChange={newOnChange(/^[a-z]+$/, setTitle, setIsTitleValid)}
+          onChange={newOnChange(/^[a-z ]+$/, setTitle, setIsTitleValid)}
           margin="normal"
         />
         <TextField
