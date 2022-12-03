@@ -10,22 +10,21 @@ pub async fn get_most_profitable_services_for_month(
 ) -> Result<Vec<ServiceReport>> {
     sql_query(
         r"
-select services.*, count(orders.id) as order_count from services
-inner join specialties on services.id = specialties.service_id
-inner join orders on specialties.id = orders.specialty_id
-group by services.id, services.title, services.price, services.duration
-having count(orders.id) >= (
-  select c from (
-    select count(orders.id) as c from services
-    inner join specialties on services.id = specialties.service_id
-    inner join orders on specialties.id = orders.specialty_id
+select services.*, price_sum as revenue from services
+inner join (
+    select services.id, sum(services.price) as price_sum from services
+    inner join specialties on specialties.service_id = services.id
+    inner join orders on orders.specialty_id = specialties.id
     group by services.id
-    order by count(orders.id) desc
-    limit 5
-  ) subq
-  order by c asc
-  limit 1
-);
+    having sum(services.price) = (
+        select max(price_sum) as max_sum from (
+            select sum(services.price) as price_sum from services
+            inner join specialties on specialties.service_id = services.id
+            inner join orders on orders.specialty_id = specialties.id
+            group by services.id
+        ) _
+    )
+) subq on subq.id = services.id;
 ",
     )
     .load::<ServiceReport>(conn)

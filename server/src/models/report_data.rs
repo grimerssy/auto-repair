@@ -14,8 +14,8 @@ pub struct ServiceReport {
     pub price: Money,
     #[diesel(sql_type = sql_types::Time)]
     pub duration: Time,
-    #[diesel(sql_type = sql_types::BigInt)]
-    pub order_count: i64,
+    #[diesel(sql_type = sql_types::Money)]
+    pub revenue: Money,
 }
 #[derive(Serialize, QueryableByName, Clone)]
 #[serde(rename_all = "camelCase")]
