@@ -71,7 +71,7 @@ const TableCars = () => {
                           onClick={() => {
                             if (
                               confirm(
-                                "Are you sure you want to delete this car?"
+                                `Are you sure you want to delete ${c.make} ${c.model} ${c.year}?\n\nNote that all associated orders will be deleted too.`
                               )
                             ) {
                               deleteCarByVin(c.vin);
