@@ -1,6 +1,6 @@
 use super::{check_if_admin, get_claims, retrieve_connection, Result};
 use crate::{
-    data::{cars, contacts, orders, DbPool},
+    data::{cars, contacts, orders, sql_to_chrono_format, timestamp::FORMAT, DbPool},
     errors::{map::from_diesel_error, Error},
     models::{
         car::InsertCar,
@@ -373,11 +373,16 @@ fn get_receipt_pdf(data: Vec<Order>) -> Vec<u8> {
     let mut decorator = genpdf::SimplePageDecorator::new();
     decorator.set_margins(15);
     doc.set_page_decorator(decorator);
-    doc.set_title("Check");
+    doc.set_title("Receipt");
     doc.set_line_spacing(1.5);
     doc.set_font_size(14);
     doc.push(elements::StyledElement::new(
-        elements::Paragraph::new("Check"),
+        elements::Paragraph::new(format!(
+            "Receipt for {}",
+            chrono::offset::Utc::now()
+                .naive_utc()
+                .format(&sql_to_chrono_format(FORMAT))
+        )),
         style::Effect::Bold,
     ));
     doc.push(elements::Break::new(1));
