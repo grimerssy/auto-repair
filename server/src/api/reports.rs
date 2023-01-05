@@ -45,6 +45,7 @@ pub async fn get_most_valuable_clients_for_month(
     clients.iter_mut().for_each(|c| c.id.encode(keys.contacts));
     Ok(Json(clients))
 }
+
 #[get("/cars")]
 pub async fn get_most_frequent_cars_for_month(
     req: HttpRequest,
@@ -58,6 +59,7 @@ pub async fn get_most_frequent_cars_for_month(
         .map(Json)
         .map_err(from_diesel_error())
 }
+
 #[get("/hours")]
 pub async fn get_total_work_hours_for_month(
     req: HttpRequest,
